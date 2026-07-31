@@ -11,7 +11,7 @@ import {
 } from "../round3/round3.logic";
 import { Button } from "../Button";
 
-const SLOT_EMOJI: Record<SlotColor, string> = { green: "🟩", gray: "⬜" };
+const SLOT_EMOJI: Record<SlotColor, string> = { green: "🟩", yellow: "🟨", gray: "⬜" };
 
 function buildShareText(item: ItemOfDay, state: DailyGameState): string {
   const round1Line = Array.from({ length: item.composition.length }, (_, i) => {
@@ -23,7 +23,7 @@ function buildShareText(item: ItemOfDay, state: DailyGameState): string {
 
   const yearBand =
     state.round3.yearDiff !== null
-      ? temperatureBand(yearRatio(state.round3.yearDiff, item.origin.minYear, item.origin.maxYear))
+      ? temperatureBand(yearRatio(state.round3.yearDiff))
       : null;
   const kmBand = state.round3.kmDiff !== null ? temperatureBand(kmRatio(state.round3.kmDiff)) : null;
   const round3Line = [yearBand, kmBand]

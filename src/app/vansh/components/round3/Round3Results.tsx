@@ -15,7 +15,7 @@ export function Round3Results({
 }) {
   const yearBand =
     round3.yearDiff !== null
-      ? temperatureBand(yearRatio(round3.yearDiff, item.origin.minYear, item.origin.maxYear))
+      ? temperatureBand(yearRatio(round3.yearDiff))
       : null;
   const kmBand = round3.kmDiff !== null ? temperatureBand(kmRatio(round3.kmDiff)) : null;
 

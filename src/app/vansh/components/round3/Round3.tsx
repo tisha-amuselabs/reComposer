@@ -6,6 +6,7 @@ import { EraSlider } from "./EraSlider";
 import { WorldMapGuesser } from "./WorldMapGuesser";
 import { Round3Results } from "./Round3Results";
 import { Button } from "../Button";
+import { YEAR_GUESS_MAX, YEAR_GUESS_MIN } from "./round3.logic";
 
 export function Round3({
   item,
@@ -24,7 +25,7 @@ export function Round3({
     return <Round3Results item={item} round3={round3} onContinue={onContinue} />;
   }
 
-  const year = round3.guess.year ?? Math.round((item.origin.minYear + item.origin.maxYear) / 2);
+  const year = round3.guess.year ?? Math.round((YEAR_GUESS_MIN + YEAR_GUESS_MAX) / 2);
   const hasLocation = round3.guess.lat !== null && round3.guess.lng !== null;
 
   return (
@@ -82,8 +83,8 @@ export function Round3({
         <p className="materia-label mb-5">Temporal calibration</p>
         <EraSlider
           value={year}
-          minYear={item.origin.minYear}
-          maxYear={item.origin.maxYear}
+          minYear={YEAR_GUESS_MIN}
+          maxYear={YEAR_GUESS_MAX}
           onChange={(y) => onUpdateGuess({ year: y })}
         />
       </section>

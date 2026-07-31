@@ -3,9 +3,11 @@ import type { DailyGameState } from "../../types/game-state";
 import { TriviaReveal } from "./TriviaReveal";
 import { ShareCard } from "./ShareCard";
 import { ComeBackTomorrow } from "./ComeBackTomorrow";
+import { ROUND1_EXACT_POINTS, round1Score } from "../round1/round1.logic";
 
 export function EndScreen({ item, state }: { item: ItemOfDay; state: DailyGameState }) {
-  const compositionScore = state.round1.feedback?.filter((value) => value === "green").length ?? 0;
+  const compositionScore = round1Score(state.round1.feedback);
+  const compositionMaxPoints = item.composition.length * ROUND1_EXACT_POINTS;
   const processScore = state.round2.feedback?.filter((value) => value === "green").length ?? 0;
 
   return (
@@ -34,7 +36,10 @@ export function EndScreen({ item, state }: { item: ItemOfDay; state: DailyGameSt
                 Composition
               </p>
               <p className="mt-2 text-2xl font-semibold text-[#dae2fd]">
-                {compositionScore}/{item.composition.length}
+                {compositionScore.points}/{compositionMaxPoints} pts
+              </p>
+              <p className="mt-1 font-mono text-[9px] uppercase tracking-wider text-[#8e9ab1]">
+                {compositionScore.exact} exact · {compositionScore.partial} partial
               </p>
             </div>
             <div className="materia-subpanel rounded-sm p-4">

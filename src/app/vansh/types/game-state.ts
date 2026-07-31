@@ -1,4 +1,4 @@
-export type SlotColor = "green" | "gray";
+export type SlotColor = "green" | "yellow" | "gray";
 export type TemperatureBand = "green" | "yellowgreen" | "yellow" | "orange" | "red";
 export type GamePhase = "round1" | "round2" | "round3" | "end";
 

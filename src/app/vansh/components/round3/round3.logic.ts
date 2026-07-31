@@ -1,6 +1,9 @@
 import type { TemperatureBand } from "../../types/game-state";
 
 const KM_GAMEPLAY_CEILING = 10_000;
+const YEAR_GAMEPLAY_CEILING = 200;
+export const YEAR_GUESS_MIN = 0;
+export const YEAR_GUESS_MAX = 2026;
 
 export function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
@@ -14,9 +17,8 @@ export function temperatureBand(ratio: number): TemperatureBand {
   return "red";
 }
 
-export function yearRatio(yearDiff: number, minYear: number, maxYear: number): number {
-  const span = Math.max(1, maxYear - minYear);
-  return clamp01(yearDiff / span);
+export function yearRatio(yearDiff: number): number {
+  return clamp01(yearDiff / YEAR_GAMEPLAY_CEILING);
 }
 
 export function kmRatio(kmDiff: number): number {

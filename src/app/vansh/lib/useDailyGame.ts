@@ -65,9 +65,21 @@ function loadInitialSnapshot(): GameSnapshot {
     stored.dateKey === dateKey &&
     stored.itemId === todaysItem.id;
 
+  const initialState = isValid
+    ? {
+        ...stored,
+        round1: stored.round1.submitted
+          ? {
+              ...stored.round1,
+              feedback: computeRound1Feedback(stored.round1.assignments, todaysItem.composition),
+            }
+          : stored.round1,
+      }
+    : createInitialState(todaysItem, dateKey);
+
   return {
     item: todaysItem,
-    state: isValid ? stored : createInitialState(todaysItem, dateKey),
+    state: initialState,
   };
 }
 
