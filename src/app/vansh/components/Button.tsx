@@ -7,7 +7,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`self-start rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 px-6 py-3 font-bold text-white shadow-lg shadow-purple-500/30 transition-all duration-150 hover:scale-[1.03] hover:shadow-purple-500/50 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:scale-100 ${className}`}
+      className={`self-start rounded-sm border border-[#b9c8de]/70 bg-[#b9c8de] px-6 py-3 font-mono text-sm font-semibold uppercase tracking-[0.08em] text-[#0d1c2d] shadow-[0_0_18px_rgba(123,208,255,0.12)] transition duration-200 hover:border-[#7bd0ff] hover:bg-[#c4e7ff] hover:shadow-[0_0_22px_rgba(123,208,255,0.22)] disabled:cursor-not-allowed disabled:border-[#44474c] disabled:bg-[#222a3d] disabled:text-[#697386] disabled:shadow-none ${className}`}
       {...props}
     />
   );

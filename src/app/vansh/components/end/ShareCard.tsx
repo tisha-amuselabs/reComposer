@@ -56,9 +56,14 @@ export function ShareCard({ item, state }: { item: ItemOfDay; state: DailyGameSt
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border-2 border-zinc-200 p-4 dark:border-zinc-800">
-      <pre className="whitespace-pre-wrap font-sans text-sm">{text}</pre>
-      <Button onClick={handleCopy}>{copied ? "Copied!" : "Copy result"}</Button>
+    <div className="materia-panel flex flex-col gap-4 rounded-xl p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
+      <div>
+        <p className="materia-label mb-3">Session export</p>
+        <pre className="whitespace-pre-wrap font-mono text-xs leading-5 text-[#c4c6cd]">{text}</pre>
+      </div>
+      <Button className="shrink-0" onClick={handleCopy}>
+        {copied ? "Report copied" : "Export report"}
+      </Button>
     </div>
   );
 }

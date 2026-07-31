@@ -15,7 +15,7 @@ export function CompositionSlots({
 }) {
   return (
     <div
-      className="grid gap-2 sm:gap-3"
+      className="grid gap-2"
       style={{ gridTemplateColumns: `repeat(${composition.length}, minmax(0, 1fr))` }}
     >
       {composition.map((c, i) => {
@@ -27,14 +27,16 @@ export function CompositionSlots({
             key={i}
             type="button"
             onClick={() => onSelectSlot(i)}
-            className={`flex aspect-square flex-col items-center justify-center gap-0.5 rounded-2xl border-2 p-1 shadow-sm transition-all ${
+            className={`flex min-h-20 flex-col items-center justify-center gap-1 rounded-sm border p-1 transition-all ${
               isActive
-                ? "scale-105 border-fuchsia-500 ring-4 ring-fuchsia-300/60 dark:ring-fuchsia-800/60"
-                : "border-zinc-300 dark:border-zinc-700"
-            } ${el ? CATEGORY_COLORS[el.category] : "bg-zinc-100 dark:bg-zinc-800"}`}
+                ? "border-[#7bd0ff] bg-[#7bd0ff]/10 shadow-[0_0_14px_rgba(123,208,255,0.16)]"
+                : "border-[#94a3b8]/15"
+            } ${el ? CATEGORY_COLORS[el.category] : "bg-[#0b1326]/70 text-[#8e9ab1]"}`}
           >
-            <span className="text-lg font-black sm:text-2xl">{c.approxPercent}%</span>
-            <span className="text-xl font-bold sm:text-2xl">{el ? el.symbol : "?"}</span>
+            <span className="font-mono text-[9px] uppercase tracking-wider opacity-75 sm:text-[10px]">
+              {c.approxPercent}% mass
+            </span>
+            <span className="font-mono text-lg font-semibold sm:text-xl">{el ? el.symbol : "+"}</span>
           </button>
         );
       })}

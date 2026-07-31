@@ -26,22 +26,22 @@ export function StepCard({
     <li
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900 ${
-        isDragging ? "opacity-50 shadow-lg" : ""
+      className={`group flex items-center gap-4 rounded-sm border border-[#94a3b8]/16 bg-[#1b2438]/90 p-4 transition-colors hover:border-[#7bd0ff]/40 hover:bg-[#222d43] ${
+        isDragging ? "z-20 opacity-60 shadow-2xl shadow-black/50" : ""
       }`}
     >
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-bold dark:bg-zinc-800">
-        {index + 1}
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#94a3b8]/15 bg-[#0b1326] font-mono text-sm font-semibold text-[#7bd0ff]">
+        {String(index + 1).padStart(2, "0")}
       </span>
       <div className="flex-1">
-        <p className="font-medium">{step.label}</p>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">{step.description}</p>
+        <p className="font-medium text-[#dae2fd]">{step.label}</p>
+        <p className="mt-1 text-xs leading-5 text-[#8e9ab1]">{step.description}</p>
       </div>
       <button
         type="button"
         {...attributes}
         {...listeners}
-        className="cursor-grab touch-none rounded p-2 text-lg text-zinc-400 hover:text-zinc-700 active:cursor-grabbing dark:hover:text-zinc-200"
+        className="cursor-grab touch-none rounded-sm border border-transparent p-2 font-mono text-lg text-[#68758e] transition-colors hover:border-[#94a3b8]/20 hover:text-[#7bd0ff] active:cursor-grabbing"
         aria-label={`Drag to reorder ${step.label}`}
       >
         ⠿

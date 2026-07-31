@@ -9,13 +9,13 @@ export function PeriodicTable({
   onPick: (symbol: string) => void;
 }) {
   return (
-    <div className="overflow-x-auto pb-2">
+    <div className="overflow-x-auto pb-3">
       <div
-        className="grid gap-1"
+        className="grid gap-1.5"
         style={{
-          gridTemplateColumns: "repeat(18, minmax(1.75rem, 1fr))",
-          gridTemplateRows: "repeat(10, minmax(1.75rem, 1fr))",
-          minWidth: "640px",
+          gridTemplateColumns: "repeat(18, minmax(1.9rem, 1fr))",
+          gridTemplateRows: "repeat(10, minmax(1.9rem, 1fr))",
+          minWidth: "680px",
         }}
       >
         {PERIODIC_TABLE.map((el) => (

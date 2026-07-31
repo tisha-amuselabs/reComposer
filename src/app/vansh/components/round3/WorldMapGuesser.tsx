@@ -1,15 +1,19 @@
 "use client";
 
-import type { MouseEvent } from "react";
-import {
-  COUNTRY_PATHS,
-  GRATICULE_PATH,
-  MAP_HEIGHT,
-  MAP_WIDTH,
-  OUTLINE_PATH,
-  latLngToPixel,
-  pixelToLatLng,
-} from "./mapProjection";
+import dynamic from "next/dynamic";
+import type { GlobeMarker } from "./GlobeCanvas";
+
+const GlobeCanvas = dynamic(
+  () => import("./GlobeCanvas").then((module) => module.GlobeCanvas),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="grid h-full min-h-[360px] place-items-center">
+        <p className="materia-label animate-pulse">Calibrating globe&hellip;</p>
+      </div>
+    ),
+  }
+);
 
 export function WorldMapGuesser({
   guessLat,
@@ -20,50 +24,53 @@ export function WorldMapGuesser({
   guessLng: number | null;
   onGuess: (lat: number, lng: number) => void;
 }) {
-  function handleClick(e: MouseEvent<SVGSVGElement>) {
-    const svg = e.currentTarget;
-    const rect = svg.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * MAP_WIDTH;
-    const y = ((e.clientY - rect.top) / rect.height) * MAP_HEIGHT;
-    const coords = pixelToLatLng(x, y);
-    if (coords) onGuess(coords.lat, coords.lng);
-  }
-
-  const pin = guessLat !== null && guessLng !== null ? latLngToPixel(guessLat, guessLng) : null;
+  const markers: GlobeMarker[] =
+    guessLat !== null && guessLng !== null
+      ? [{ lat: guessLat, lng: guessLng, color: "#7bd0ff", label: "Your origin guess" }]
+      : [];
 
   return (
-    <div className="aspect-[2.1/1] w-full overflow-hidden rounded-2xl border-2 border-sky-200 shadow-inner dark:border-sky-900">
-      <svg
-        viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
-        preserveAspectRatio="xMidYMid slice"
-        onClick={handleClick}
-        className="h-full w-full cursor-crosshair fill-sky-100 dark:fill-slate-900"
-        role="img"
-        aria-label="World map — click to place your guess"
-      >
-        <path d={OUTLINE_PATH} />
-        <path
-          d={GRATICULE_PATH}
-          className="fill-none stroke-sky-300/50 dark:stroke-sky-100/10"
-          strokeWidth={0.5}
-        />
-        {COUNTRY_PATHS.map((c) => (
-          <path
-            key={c.id}
-            d={c.d}
-            className="fill-emerald-600/90 stroke-emerald-900/30 transition-colors hover:fill-emerald-500 dark:fill-emerald-700/80 dark:stroke-emerald-950/60 dark:hover:fill-emerald-600"
-            strokeWidth={0.6}
-          />
-        ))}
-        {pin && (
-          <circle
-            cx={pin.x}
-            cy={pin.y}
-            r={7}
-            className="fill-rose-500 stroke-2 stroke-white drop-shadow-md dark:stroke-zinc-900"
-          />
-        )}
-      </svg>
+    <div
+      className="h-[28rem] w-full overflow-hidden rounded-lg border border-[#94a3b8]/16 bg-[radial-gradient(circle_at_50%_45%,#1a263d_0%,#0b1326_62%,#060e20_100%)] shadow-inner shadow-black/40"
+      role="application"
+      aria-label="Interactive world globe — drag to rotate and click to place your guess"
+    >
+      <GlobeCanvas markers={markers} onGuess={onGuess} />
+    </div>
+  );
+}
+
+export function WorldGlobeResults({
+  guessLat,
+  guessLng,
+  trueLat,
+  trueLng,
+}: {
+  guessLat: number | null;
+  guessLng: number | null;
+  trueLat: number;
+  trueLng: number;
+}) {
+  const markers: GlobeMarker[] = [
+    ...(guessLat !== null && guessLng !== null
+      ? [{ lat: guessLat, lng: guessLng, color: "#ffb4ab", label: "Your guess" }]
+      : []),
+    { lat: trueLat, lng: trueLng, color: "#7bd0ff", label: "True origin" },
+  ];
+
+  return (
+    <div className="relative h-[28rem] w-full overflow-hidden rounded-lg border border-[#94a3b8]/16 bg-[radial-gradient(circle_at_50%_45%,#1a263d_0%,#0b1326_62%,#060e20_100%)] shadow-inner">
+      <GlobeCanvas markers={markers} focusOnMarkers />
+      <div className="pointer-events-none absolute bottom-4 left-4 flex flex-col gap-2 rounded-sm border border-[#94a3b8]/16 bg-[#0b1326]/80 px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-[#aab4c7] backdrop-blur">
+        <span className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#ffb4ab] shadow-[0_0_7px_#ffb4ab]" />
+          Your selection
+        </span>
+        <span className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#7bd0ff] shadow-[0_0_7px_#7bd0ff]" />
+          True origin
+        </span>
+      </div>
     </div>
   );
 }

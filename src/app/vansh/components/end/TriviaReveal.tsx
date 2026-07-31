@@ -1,14 +1,16 @@
 export function TriviaReveal({ trivia }: { trivia: string[] }) {
   return (
-    <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Fun facts</h3>
-      <ul className="flex flex-col gap-2">
+    <div>
+      <ul className="grid gap-4 md:grid-cols-2">
         {trivia.map((fact, i) => (
           <li
             key={i}
-            className="rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800"
+            className="materia-panel flex gap-4 rounded-lg p-5 text-sm leading-6 text-[#c4c6cd]"
           >
-            {fact}
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-sm border border-[#7bd0ff]/20 bg-[#7bd0ff]/5 font-mono text-xs text-[#7bd0ff]">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span>{fact}</span>
           </li>
         ))}
       </ul>

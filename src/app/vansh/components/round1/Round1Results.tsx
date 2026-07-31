@@ -13,12 +13,11 @@ export function Round1Results({
   onContinue: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-5">
+    <section className="materia-panel flex flex-col gap-7 rounded-xl p-5 sm:p-8">
       <div>
-        <h2 className="flex items-center gap-2 text-lg font-bold">
-          <span aria-hidden>🧪</span> Round 1 results
-        </h2>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="materia-label">Stage 01 // Analysis complete</p>
+        <h2 className="mt-3 text-2xl font-semibold text-[#dae2fd]">Composition results</h2>
+        <p className="materia-muted mt-2 text-sm">
           Here&rsquo;s how your guesses stacked up against the real composition.
         </p>
       </div>
@@ -36,19 +35,19 @@ export function Round1Results({
           return (
             <div
               key={truth.symbol}
-              className={`animate-tile-pop flex flex-col items-center gap-0.5 rounded-2xl border-2 p-2 text-center shadow-sm sm:p-3 ${
+              className={`animate-tile-pop flex min-h-32 flex-col items-center justify-center gap-1 rounded-sm border p-2 text-center sm:p-4 ${
                 isCorrect
-                  ? "border-green-500 bg-green-50 dark:bg-green-950/40"
-                  : "border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900"
+                  ? "border-[#2dd4bf]/60 bg-[#2dd4bf]/10 shadow-[0_0_16px_rgba(45,212,191,0.1)]"
+                  : "border-[#94a3b8]/20 bg-[#0b1326]/65"
               }`}
             >
-              <span className="text-lg font-black sm:text-2xl">{truth.approxPercent}%</span>
-              <span className="text-xl font-bold sm:text-2xl">{trueEl?.symbol ?? truth.symbol}</span>
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 sm:text-xs">
+              <span className="font-mono text-xs text-[#8e9ab1]">{truth.approxPercent}% mass</span>
+              <span className="font-mono text-2xl font-bold text-[#dae2fd]">{trueEl?.symbol ?? truth.symbol}</span>
+              <span className="text-[10px] text-[#8e9ab1] sm:text-xs">
                 {trueEl?.name}
               </span>
               {!isCorrect && (
-                <span className="mt-0.5 text-[10px] text-red-500 sm:text-[11px]">
+                <span className="mt-1 text-[10px] text-[#ffb4ab] sm:text-[11px]">
                   {guessedEl ? `You guessed ${guessedEl.symbol}` : "No guess"}
                 </span>
               )}
@@ -57,7 +56,7 @@ export function Round1Results({
         })}
       </div>
 
-      <Button onClick={onContinue}>Continue to Round 2</Button>
-    </div>
+      <Button onClick={onContinue}>Proceed to process</Button>
+    </section>
   );
 }

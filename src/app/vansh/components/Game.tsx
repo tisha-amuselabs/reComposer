@@ -22,52 +22,82 @@ export function Game() {
 
   if (!isLoaded || !item || !state) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-zinc-500 dark:text-zinc-400">Loading today&rsquo;s item&hellip;</p>
+      <div className="materia flex min-h-screen items-center justify-center">
+        <p className="materia-label animate-pulse">Initializing material analysis&hellip;</p>
       </div>
     );
   }
 
-  return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-8 sm:px-8">
-      <header className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-gradient text-3xl font-black tracking-tight sm:text-4xl">
-            🔬 Item of the Day
-          </h1>
-          <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{item.tagline}</p>
-        </div>
-        <ProgressDots phase={state.phase} />
-      </header>
+  const showItemHeader = state.phase === "round1" && !state.round1.submitted;
 
-      <main className="flex flex-1 flex-col rounded-3xl border border-white/60 bg-white/90 p-6 shadow-xl shadow-purple-500/10 backdrop-blur-sm dark:border-zinc-800/60 dark:bg-zinc-950/90 sm:p-8">
-        {state.phase === "round1" ? (
-          <Round1
-            item={item}
-            round1={state.round1}
-            onSubmit={submitRound1}
-            onContinue={advancePhase}
-          />
-        ) : state.phase === "round2" ? (
-          <Round2
-            item={item}
-            round2={state.round2}
-            onReorder={updateRound2Order}
-            onSubmit={submitRound2}
-            onContinue={advancePhase}
-          />
-        ) : state.phase === "round3" ? (
-          <Round3
-            item={item}
-            round3={state.round3}
-            onUpdateGuess={updateRound3Guess}
-            onSubmit={submitRound3}
-            onContinue={advancePhase}
-          />
-        ) : (
-          <EndScreen item={item} state={state} />
-        )}
-      </main>
+  return (
+    <div className="materia">
+      <div className="relative z-10 min-h-screen">
+        <header className="border-b border-[#94a3b8]/15 bg-[#0b1326]/90 backdrop-blur-xl">
+          <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-5 px-4 sm:px-8 lg:px-16">
+            <div className="flex items-center gap-3">
+              <span className="grid h-8 w-8 place-items-center rounded-sm border border-[#7bd0ff]/35 bg-[#7bd0ff]/10 font-mono text-sm font-bold text-[#7bd0ff]">
+                M
+              </span>
+              <span className="text-xl font-bold tracking-[-0.04em] text-[#b9c8de] sm:text-2xl">
+                Materia
+              </span>
+            </div>
+            <div className="max-w-[70vw] overflow-x-auto">
+              <ProgressDots phase={state.phase} />
+            </div>
+          </div>
+        </header>
+
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col px-4 pb-16 pt-10 sm:px-8 lg:px-16 lg:pt-14">
+          {showItemHeader && (
+            <div className="mb-8 flex flex-col justify-between gap-5 lg:mb-10 lg:flex-row lg:items-end">
+              <div className="max-w-4xl">
+                <p className="materia-label mb-4">Daily analysis // {state.dateKey}</p>
+                <h1 className="text-4xl font-bold tracking-[-0.035em] text-[#dae2fd] sm:text-5xl">
+                  {item.name}
+                </h1>
+                <p className="materia-muted mt-3 max-w-3xl text-base leading-7 sm:text-lg">
+                  {item.tagline}
+                </p>
+              </div>
+              <div className="materia-subpanel flex w-fit items-center gap-3 rounded-sm px-4 py-3 font-mono text-xs uppercase tracking-[0.08em] text-[#94a3b8]">
+                <span className="h-2 w-2 rounded-full bg-[#7bd0ff] shadow-[0_0_10px_#7bd0ff]" />
+                Session active
+              </div>
+            </div>
+          )}
+
+          <main className="materia-grid-glow">
+            {state.phase === "round1" ? (
+              <Round1
+                item={item}
+                round1={state.round1}
+                onSubmit={submitRound1}
+                onContinue={advancePhase}
+              />
+            ) : state.phase === "round2" ? (
+              <Round2
+                item={item}
+                round2={state.round2}
+                onReorder={updateRound2Order}
+                onSubmit={submitRound2}
+                onContinue={advancePhase}
+              />
+            ) : state.phase === "round3" ? (
+              <Round3
+                item={item}
+                round3={state.round3}
+                onUpdateGuess={updateRound3Guess}
+                onSubmit={submitRound3}
+                onContinue={advancePhase}
+              />
+            ) : (
+              <EndScreen item={item} state={state} />
+            )}
+          </main>
+        </div>
+      </div>
     </div>
   );
 }

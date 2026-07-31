@@ -1,6 +1,5 @@
 import type { ItemOfDay } from "../../types/item";
 import { LITHIUM_ION_BATTERY } from "./lithiumIonBattery";
-import { MATCHSTICK_TIP } from "./matchstickTip";
 
 export const ITEMS: ItemOfDay[] = [LITHIUM_ION_BATTERY];
 

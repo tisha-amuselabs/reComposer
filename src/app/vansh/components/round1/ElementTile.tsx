@@ -16,14 +16,14 @@ export function ElementTile({
       onClick={onClick}
       style={{ gridRow: element.gridRow, gridColumn: element.gridColumn }}
       title={element.name}
-      className={`flex aspect-square flex-col items-center justify-center rounded-md border text-[10px] leading-none transition-transform hover:scale-110 sm:text-xs ${CATEGORY_COLORS[element.category]} ${
+      className={`flex aspect-square flex-col items-center justify-center rounded-sm border text-[10px] leading-none transition-all hover:z-10 hover:scale-110 hover:border-[#7bd0ff] sm:text-xs ${CATEGORY_COLORS[element.category]} ${
         selected
-          ? "scale-110 ring-2 ring-fuchsia-500 ring-offset-1 dark:ring-fuchsia-400"
-          : "border-black/10 dark:border-white/10"
+          ? "z-10 scale-110 border-[#7bd0ff] ring-2 ring-[#7bd0ff]/50"
+          : "border-white/5 opacity-80 hover:opacity-100"
       }`}
     >
       <span className="text-[8px] opacity-70 sm:text-[10px]">{element.atomicNumber}</span>
-      <span className="text-sm font-bold sm:text-base">{element.symbol}</span>
+      <span className="font-mono text-sm font-bold sm:text-base">{element.symbol}</span>
     </button>
   );
 }

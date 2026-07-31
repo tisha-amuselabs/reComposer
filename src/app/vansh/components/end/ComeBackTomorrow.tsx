@@ -20,8 +20,9 @@ export function ComeBackTomorrow() {
   }, []);
 
   return (
-    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-      Next item of the day in {label}. Come back tomorrow!
-    </p>
+    <div className="rounded-sm border border-[#94a3b8]/20 bg-[#222a3d]/80 px-6 py-5">
+      <p className="font-mono text-[10px] uppercase tracking-wider text-[#8e9ab1]">Next analysis</p>
+      <p className="mt-2 font-mono text-lg font-semibold text-[#b9c8de]">{label}</p>
+    </div>
   );
 }

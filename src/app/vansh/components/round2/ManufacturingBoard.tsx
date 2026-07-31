@@ -45,7 +45,7 @@ export function ManufacturingBoard({
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={order} strategy={verticalListSortingStrategy}>
-        <ol className="flex flex-col gap-2">
+        <ol className="flex flex-col gap-3 rounded-lg border border-dashed border-[#7bd0ff]/18 bg-[#060e20]/30 p-3 sm:p-5">
           {order.map((id, index) => (
             <StepCard key={id} id={id} index={index} step={stepById[id]} />
           ))}
