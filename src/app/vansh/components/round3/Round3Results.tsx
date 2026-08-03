@@ -1,17 +1,17 @@
 import type { ItemOfDay } from "../../types/item";
 import type { Round3State } from "../../types/game-state";
 import { TEMPERATURE_BAND_COLORS, kmRatio, temperatureBand, yearRatio } from "./round3.logic";
-import { Button } from "../Button";
 import { WorldGlobeResults } from "./WorldMapGuesser";
+import { Button } from "../Button";
 
 export function Round3Results({
   item,
   round3,
-  onContinue,
+  onReplay,
 }: {
   item: ItemOfDay;
   round3: Round3State;
-  onContinue: () => void;
+  onReplay: () => void;
 }) {
   const yearBand =
     round3.yearDiff !== null
@@ -67,7 +67,9 @@ export function Round3Results({
         The real answer: <strong>{item.origin.yearLabel}</strong>, {item.origin.locationName}.
       </p>
 
-      <Button onClick={onContinue}>Complete synthesis</Button>
+      <Button variant="ghost" onClick={onReplay}>
+        Play this stage again
+      </Button>
     </section>
   );
 }

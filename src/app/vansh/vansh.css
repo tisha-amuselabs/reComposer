@@ -152,3 +152,60 @@
     transform: translateY(0);
   }
 }
+
+@keyframes materia-step-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(0) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes materia-step-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(45, 212, 191, 0);
+  }
+  40% {
+    box-shadow: 0 0 28px 0 rgba(45, 212, 191, 0.35);
+  }
+}
+
+@keyframes materia-tile-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.materia-step-celebrate {
+  animation:
+    materia-step-pop 520ms ease-out both,
+    materia-step-glow 900ms ease-out both;
+}
+
+.materia-tile-pop {
+  animation: materia-tile-pop 480ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .materia-step-celebrate,
+  .materia-tile-pop {
+    animation: none;
+  }
+}

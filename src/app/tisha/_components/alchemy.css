@@ -140,13 +140,18 @@
   backdrop-filter: blur(1.5px);
 }
 
-/* Solid paper-white — fully covers the backdrop behind inventory */
+/* Solid paper-white — fully covers the backdrop behind inventory / actions */
 .alchemy-inventory {
   background: #fffcf7;
   border: 1px solid rgba(26, 21, 16, 0.12);
   border-radius: 2px;
   padding: 1.25rem 1.15rem 1.35rem;
   box-shadow: 0 1px 0 rgba(255, 252, 245, 0.85) inset;
+}
+
+.alchemy-actions button {
+  border-radius: 2px;
+  background: #fffcf7;
 }
 
 .alchemy-modal-backdrop {

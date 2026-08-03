@@ -8,9 +8,13 @@ export interface Round1State {
   feedback: SlotColor[] | null;
 }
 
+/** Stage 02 reaction chamber progress */
 export interface Round2State {
-  shuffledOrder: string[];
-  order: string[];
+  inventory: string[];
+  /** Manufacturing step ids unlocked, in discovery order */
+  completedSteps: string[];
+  /** True once the target product has been synthesized */
+  synthesized: boolean;
   submitted: boolean;
   feedback: SlotColor[] | null;
 }
@@ -29,7 +33,7 @@ export interface Round3State {
 }
 
 export interface DailyGameState {
-  schemaVersion: 1;
+  schemaVersion: 2;
   dateKey: string;
   itemId: string;
   phase: GamePhase;

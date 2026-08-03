@@ -1,17 +1,28 @@
 import type { ItemId, Recipe } from "./types";
 
-/** Order-independent recipe match. Returns the result id or null. */
-export function combine(
-  a: ItemId,
-  b: ItemId,
-  recipes: Recipe[],
-): ItemId | null {
-  if (a === b) return null;
+function sameMultiset(a: ItemId[], b: ItemId[]): boolean {
+  if (a.length !== b.length) return false;
+  const counts = new Map<ItemId, number>();
+  for (const id of a) counts.set(id, (counts.get(id) ?? 0) + 1);
+  for (const id of b) {
+    const n = counts.get(id);
+    if (!n) return false;
+    if (n === 1) counts.delete(id);
+    else counts.set(id, n - 1);
+  }
+  return counts.size === 0;
+}
 
-  const pair = new Set([a, b]);
+/** Apply an action to selected materials. Returns products or null. */
+export function applyAction(
+  actionId: string,
+  inputIds: ItemId[],
+  recipes: Recipe[],
+): ItemId[] | null {
   for (const recipe of recipes) {
-    if (pair.has(recipe.inputs[0]) && pair.has(recipe.inputs[1])) {
-      return recipe.result;
+    if (recipe.action !== actionId) continue;
+    if (sameMultiset(recipe.inputs, inputIds)) {
+      return [...recipe.results];
     }
   }
   return null;

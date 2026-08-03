@@ -1,13 +1,11 @@
 import type { Item, ItemId } from "./types";
 
-/** Shared registry for every reinventing-the-wheel puzzle */
+/** Shared registry for every reinventing-the-wheel puzzle (materials only) */
 export const items: Record<ItemId, Item> = {
   // — Casein plastic —
   milk: { id: "milk", name: "Milk", color: "#f5f0e6" },
   lemon: { id: "lemon", name: "Lemon", color: "#e8d48b" },
   tree: { id: "tree", name: "Tree", color: "#6b8f71" },
-  fire: { id: "fire", name: "Fire", color: "#c45c3e" },
-  axe: { id: "axe", name: "Chop", color: "#8a7355" },
   curd: { id: "curd", name: "Curdled milk", color: "#efe6d0" },
   wood: { id: "wood", name: "Wood", color: "#a67c52" },
   heat: { id: "heat", name: "Heat", color: "#d4a574" },
@@ -18,6 +16,8 @@ export const items: Record<ItemId, Item> = {
     src: "/tisha/casein.png",
   },
   "warm-milk": { id: "warm-milk", name: "Warm milk", color: "#f0e4c8" },
+  whey: { id: "whey", name: "Whey", color: "#f7f2e4" },
+  solids: { id: "solids", name: "Milk solids", color: "#e8dcc4" },
 
   // — Vulcanized rubber —
   latex: { id: "latex", name: "Latex", color: "#e8e4d8" },
@@ -29,7 +29,6 @@ export const items: Record<ItemId, Item> = {
   water: { id: "water", name: "Water", color: "#9bb8c9" },
   chips: { id: "chips", name: "Wood chips", color: "#b8956a" },
   pulp: { id: "pulp", name: "Pulp", color: "#d9d0c0" },
-  stone: { id: "stone", name: "Stone press", color: "#8a8680" },
   paper: { id: "paper", name: "Paper", color: "#f4f0e6" },
 
   // — Glass —
@@ -37,6 +36,7 @@ export const items: Record<ItemId, Item> = {
   ash: { id: "ash", name: "Ash", color: "#9a9590" },
   flux: { id: "flux", name: "Flux", color: "#b0a898" },
   glass: { id: "glass", name: "Glass", color: "#c5dce6" },
+  batch: { id: "batch", name: "Glass batch", color: "#cfc4a8" },
 
   // — Soap —
   fat: { id: "fat", name: "Animal fat", color: "#f0e6c8" },

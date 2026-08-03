@@ -2,7 +2,7 @@ import type { GamePhase } from "../types/game-state";
 
 const ROUND_META = [
   { phase: "round1" as const, label: "Composition" },
-  { phase: "round2" as const, label: "Process" },
+  { phase: "round2" as const, label: "How is it made?" },
   { phase: "round3" as const, label: "History" },
   { phase: "end" as const, label: "Trivia" },
 ];

@@ -13,16 +13,18 @@ export function Round3({
   round3,
   onUpdateGuess,
   onSubmit,
-  onContinue,
+  onReplay,
 }: {
   item: ItemOfDay;
   round3: Round3State;
   onUpdateGuess: (partial: Partial<Round3Guess>) => void;
   onSubmit: () => void;
-  onContinue: () => void;
+  onReplay: () => void;
 }) {
   if (round3.submitted) {
-    return <Round3Results item={item} round3={round3} onContinue={onContinue} />;
+    return (
+      <Round3Results item={item} round3={round3} onReplay={onReplay} />
+    );
   }
 
   const year = round3.guess.year ?? Math.round((YEAR_GUESS_MIN + YEAR_GUESS_MAX) / 2);

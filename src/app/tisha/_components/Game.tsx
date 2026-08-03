@@ -1,17 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { combine } from "../_lib/engine";
+import { actions } from "../_lib/actions";
+import { applyAction } from "../_lib/engine";
 import { items } from "../_lib/items";
 import { puzzles } from "../_lib/puzzles";
-import type { ItemId, Puzzle } from "../_lib/types";
+import type { ActionId, HintLevel, ItemId, Puzzle } from "../_lib/types";
 import "./alchemy.css";
+import { ActionsPanel } from "./ActionsPanel";
 import { AlchemyModal } from "./AlchemyModal";
+import { HintPanel } from "./HintPanel";
 import { Inventory } from "./Inventory";
 import {
   clampToCanvas,
   clientToCanvasLocal,
-  findOverlapTarget,
   HIT_SIZE,
   Workspace,
   type CanvasInstance,
@@ -21,14 +23,13 @@ import {
 type Feedback =
   | { kind: "idle" }
   | { kind: "success"; name: string }
-  | { kind: "fail" }
+  | { kind: "fail"; detail?: string }
   | { kind: "win"; name: string };
 
 const REVEAL_MS = 650;
 const FAIL_SHAKE_MS = 420;
 const POP_CLEAR_MS = 520;
 
-/** Elegant display of eraPlace, e.g. "1897 · Munich, Germany" */
 function formatEraPlace(raw: string) {
   const bce = raw.match(/^(\d+)\s+BCE\s+(.+)$/i);
   if (bce) return `${bce[1]} BCE · ${bce[2]}`;
@@ -37,7 +38,6 @@ function formatEraPlace(raw: string) {
   return raw;
 }
 
-/** Elapsed seconds → `m:ss` (e.g. `0:45`, `1:23`) */
 function formatElapsed(totalSeconds: number) {
   const s = Math.max(0, Math.floor(totalSeconds));
   const m = Math.floor(s / 60);
@@ -59,6 +59,7 @@ export function Game() {
     ...puzzle.startIds,
   ]);
   const [instances, setInstances] = useState<CanvasInstance[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<Feedback>({ kind: "idle" });
   const [won, setWon] = useState(false);
   const [showStartModal, setShowStartModal] = useState(true);
@@ -70,12 +71,18 @@ export function Game() {
   );
   const [elapsedSec, setElapsedSec] = useState(0);
   const [finalTimeSec, setFinalTimeSec] = useState<number | null>(null);
+  const [hintText, setHintText] = useState<string | null>(null);
+  const [hintLoading, setHintLoading] = useState(false);
+  const [usedHintIds, setUsedHintIds] = useState<string[]>([]);
+  const [hintsExhausted, setHintsExhausted] = useState(false);
 
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const settleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startedAtRef = useRef<number | null>(null);
   const instancesRef = useRef(instances);
   instancesRef.current = instances;
+  const selectedRef = useRef(selectedIds);
+  selectedRef.current = selectedIds;
   const ghostRef = useRef<InventoryGhost | null>(null);
   ghostRef.current = inventoryGhost;
   const busyRef = useRef(busy);
@@ -123,6 +130,7 @@ export function Game() {
       ghostRef.current = null;
       setInventory([...next.startIds]);
       setInstances([]);
+      setSelectedIds([]);
       setFeedback({ kind: "idle" });
       setWon(false);
       setShowWinModal(false);
@@ -132,6 +140,10 @@ export function Game() {
       setInventoryGhost(null);
       setElapsedSec(0);
       setFinalTimeSec(null);
+      setHintText(null);
+      setHintLoading(false);
+      setUsedHintIds([]);
+      setHintsExhausted(false);
     },
     [clearTimers],
   );
@@ -200,35 +212,63 @@ export function Game() {
     [spawnAt],
   );
 
-  const runCombineAt = useCallback(
-    (
-      a: ItemId,
-      b: ItemId,
-      dropX: number,
-      dropY: number,
-      removeIds: string[],
-    ): boolean => {
-      if (busyRef.current || wonRef.current || !playingRef.current) return false;
+  const pulseFail = useCallback((detail?: string) => {
+    setFailPulse(true);
+    setFeedback({ kind: "fail", detail });
+    window.setTimeout(() => setFailPulse(false), FAIL_SHAKE_MS);
+  }, []);
+
+  const runAction = useCallback(
+    (actionId: ActionId) => {
+      if (busyRef.current || wonRef.current || !playingRef.current) return;
 
       const current = puzzleRef.current;
-      const result = combine(a, b, current.recipes);
-      if (!result) {
-        setFailPulse(true);
-        setFeedback({ kind: "fail" });
-        window.setTimeout(() => setFailPulse(false), FAIL_SHAKE_MS);
-        return false;
+      const action = actions[actionId];
+      if (!action) return;
+
+      const selected = instancesRef.current.filter((inst) =>
+        selectedRef.current.includes(inst.instanceId),
+      );
+
+      if (selected.length !== action.arity) {
+        pulseFail(
+          action.arity === 2
+            ? `Select two materials for ${action.name}`
+            : `Select one material for ${action.name}`,
+        );
+        return;
+      }
+
+      const results = applyAction(
+        actionId,
+        selected.map((s) => s.itemId),
+        current.recipes,
+      );
+
+      if (!results) {
+        pulseFail("That process does nothing here");
+        return;
       }
 
       clearTimers();
       setBusy(true);
-      setInstances((prev) =>
-        prev.filter((inst) => !removeIds.includes(inst.instanceId)),
-      );
+      setSelectedIds([]);
 
-      spawnAt(result, dropX, dropY, true);
-      addToInventory(result);
+      const removeIds = new Set(selected.map((s) => s.instanceId));
+      const base = selected[0];
+      setInstances((prev) => prev.filter((inst) => !removeIds.has(inst.instanceId)));
 
-      if (result === current.targetId) {
+      results.forEach((resultId, i) => {
+        const ox = (i % 2) * (HIT_SIZE + 12);
+        const oy = Math.floor(i / 2) * (HIT_SIZE + 28);
+        spawnAt(resultId, base.x + ox, base.y + oy, true);
+        addToInventory(resultId);
+      });
+
+      const hitTarget = results.includes(current.targetId);
+      const names = results.map((id) => items[id]?.name ?? id).join(" · ");
+
+      if (hitTarget) {
         const secs =
           startedAtRef.current !== null
             ? (Date.now() - startedAtRef.current) / 1000
@@ -236,21 +276,20 @@ export function Game() {
         setFinalTimeSec(secs);
         setElapsedSec(secs);
         setWon(true);
-        setFeedback({ kind: "win", name: items[result].name });
+        setFeedback({
+          kind: "win",
+          name: items[current.targetId].name,
+        });
       } else {
-        setFeedback({ kind: "success", name: items[result].name });
+        setFeedback({ kind: "success", name: names });
       }
 
       settleRef.current = setTimeout(() => {
         setBusy(false);
-        if (result === current.targetId) {
-          setShowWinModal(true);
-        }
+        if (hitTarget) setShowWinModal(true);
       }, REVEAL_MS);
-
-      return true;
     },
-    [addToInventory, clearTimers, spawnAt],
+    [addToInventory, clearTimers, pulseFail, spawnAt],
   );
 
   const handleMove = useCallback((instanceId: string, x: number, y: number) => {
@@ -261,20 +300,20 @@ export function Game() {
     );
   }, []);
 
-  const handleCombineInstances = useCallback(
-    (draggedId: string, targetInstId: string, dropX: number, dropY: number) => {
-      const list = instancesRef.current;
-      const dragged = list.find((i) => i.instanceId === draggedId);
-      const target = list.find((i) => i.instanceId === targetInstId);
-      if (!dragged || !target) return false;
+  const handleToggleSelect = useCallback((instanceId: string) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(instanceId)) {
+        return prev.filter((id) => id !== instanceId);
+      }
+      if (prev.length >= 2) return [...prev.slice(1), instanceId];
+      return [...prev, instanceId];
+    });
+    setFeedback({ kind: "idle" });
+  }, []);
 
-      return runCombineAt(dragged.itemId, target.itemId, dropX, dropY, [
-        draggedId,
-        targetInstId,
-      ]);
-    },
-    [runCombineAt],
-  );
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds([]);
+  }, []);
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -330,28 +369,6 @@ export function Game() {
         ghost?.x ?? local.x - HIT_SIZE / 2,
         ghost?.y ?? local.y - HIT_SIZE / 2,
       );
-
-      const target = findOverlapTarget(
-        instancesRef.current,
-        null,
-        pos.x,
-        pos.y,
-      );
-      if (target) {
-        const ok = runCombineAt(itemId, target.itemId, pos.x, pos.y, [
-          target.instanceId,
-        ]);
-        if (!ok) {
-          const offset = clampToCanvas(
-            surface,
-            pos.x + HIT_SIZE * 0.75,
-            pos.y,
-          );
-          spawnAt(itemId, offset.x, offset.y);
-        }
-        return;
-      }
-
       spawnAt(itemId, pos.x, pos.y);
     };
 
@@ -363,7 +380,7 @@ export function Game() {
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onUp);
     };
-  }, [runCombineAt, spawnAt, spawnNearCenter]);
+  }, [spawnAt, spawnNearCenter]);
 
   const handleInventoryPointerDown = (
     itemId: ItemId,
@@ -384,9 +401,43 @@ export function Game() {
 
   useEffect(() => {
     if (feedback.kind !== "success" && feedback.kind !== "fail") return;
-    const t = setTimeout(() => setFeedback({ kind: "idle" }), 1800);
+    const t = setTimeout(() => setFeedback({ kind: "idle" }), 2200);
     return () => clearTimeout(t);
   }, [feedback]);
+
+  const askHint = useCallback(async () => {
+    if (hintLoading || hintsExhausted || won || showStartModal) return;
+    setHintLoading(true);
+    try {
+      const res = await fetch("/api/tisha/hint", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          puzzleId: puzzleRef.current.id,
+          inventory,
+          usedHintIds,
+          minLevel: 1,
+        }),
+      });
+      const data = (await res.json()) as {
+        exhausted?: boolean;
+        text?: string | null;
+        hintId?: string | null;
+        level?: HintLevel | null;
+      };
+      if (data.exhausted || !data.text || !data.hintId) {
+        setHintsExhausted(true);
+        setHintText("The notebook has nothing more—trust the bench.");
+      } else {
+        setHintText(data.text);
+        setUsedHintIds((prev) => [...prev, data.hintId!]);
+      }
+    } catch {
+      setHintText("The laboratory is quiet—try again in a moment.");
+    } finally {
+      setHintLoading(false);
+    }
+  }, [hintLoading, hintsExhausted, won, showStartModal, inventory, usedHintIds]);
 
   const locked = busy || won || showStartModal;
   const eraPlaceDisplay = formatEraPlace(puzzle.eraPlace);
@@ -399,7 +450,7 @@ export function Game() {
   const dismissWinModal = useCallback(() => setShowWinModal(false), []);
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 sm:gap-6">
         <div className="min-w-0">
           <p className="mb-1 font-[family-name:var(--font-eb-garamond)] text-[11px] uppercase tracking-[0.2em] text-[#5c5348]">
@@ -425,7 +476,7 @@ export function Game() {
         </div>
       </header>
 
-      <div className="flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:gap-6">
         <Inventory
           ids={inventory}
           onPointerDragStart={handleInventoryPointerDown}
@@ -440,8 +491,10 @@ export function Game() {
             disabled={won || showStartModal}
             inventoryGhost={inventoryGhost}
             failPulse={failPulse}
+            selectedIds={selectedIds}
             onMove={handleMove}
-            onCombineInstances={handleCombineInstances}
+            onToggleSelect={handleToggleSelect}
+            onClearSelection={handleClearSelection}
           />
 
           <div
@@ -455,16 +508,33 @@ export function Game() {
             aria-live="polite"
           >
             {feedback.kind === "success" && (
-              <span>Discovered: {feedback.name}</span>
+              <span>Process yielded: {feedback.name}</span>
             )}
-            {feedback.kind === "fail" && <span>Nothing happened</span>}
+            {feedback.kind === "fail" && (
+              <span>{feedback.detail ?? "Nothing happened"}</span>
+            )}
             {feedback.kind === "win" && !showWinModal && (
               <span className="not-italic font-medium text-[#1a1510]">
                 You made {feedback.name}!
               </span>
             )}
           </div>
+
+          <HintPanel
+            text={hintText}
+            loading={hintLoading}
+            disabled={locked}
+            exhausted={hintsExhausted}
+            onAsk={askHint}
+          />
         </div>
+
+        <ActionsPanel
+          actionIds={puzzle.actionIds}
+          onSelect={runAction}
+          disabled={locked}
+          selectionCount={selectedIds.length}
+        />
       </div>
 
       {showStartModal && (
@@ -477,6 +547,10 @@ export function Game() {
           </p>
           <p className="mt-3 font-[family-name:var(--font-eb-garamond)] text-base leading-relaxed text-[#2a241c]">
             {puzzle.scenario}
+          </p>
+          <p className="mt-4 font-[family-name:var(--font-eb-garamond)] text-sm italic text-[#5c5348]">
+            Place materials from the left. Select them on the bench. Apply
+            actions from the right—including Break apart.
           </p>
           <p className="mt-4 font-[family-name:var(--font-eb-garamond)] text-xl text-[#1a1510]">
             Can you create <em className="italic">{puzzle.targetLabel}</em>?

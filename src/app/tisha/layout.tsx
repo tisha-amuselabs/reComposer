@@ -11,7 +11,7 @@ const ebGaramond = EB_Garamond({
 export const metadata: Metadata = {
   title: "Reinventing the Wheel — reComposer",
   description:
-    "Little Alchemy–style puzzles that rediscover everyday materials from history.",
+    "A materials-and-actions lab for rediscovering everyday inventions—with breakdowns and process hints.",
 };
 
 export default function TishaLayout({

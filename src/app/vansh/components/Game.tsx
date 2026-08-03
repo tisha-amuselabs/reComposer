@@ -2,6 +2,7 @@
 
 import { useDailyGame } from "../lib/useDailyGame";
 import { ProgressDots } from "./ProgressDots";
+import { StageNav } from "./StageNav";
 import { Round1 } from "./round1/Round1";
 import { Round2 } from "./round2/Round2";
 import { Round3 } from "./round3/Round3";
@@ -13,22 +14,32 @@ export function Game() {
     state,
     isLoaded,
     submitRound1,
-    updateRound2Order,
+    recordChamberReaction,
     submitRound2,
     updateRound3Guess,
     submitRound3,
-    advancePhase,
+    goBack,
+    goNext,
+    canGoBack,
+    canGoNext,
+    canReplayStage,
+    replayStage,
+    playAgain,
   } = useDailyGame();
 
   if (!isLoaded || !item || !state) {
     return (
       <div className="materia flex min-h-screen items-center justify-center">
-        <p className="materia-label animate-pulse">Initializing material analysis&hellip;</p>
+        <p className="materia-label animate-pulse">
+          Initializing material analysis&hellip;
+        </p>
       </div>
     );
   }
 
   const showItemHeader = state.phase === "round1" && !state.round1.submitted;
+  const compactShell =
+    state.phase === "round2" && !state.round2.submitted;
 
   return (
     <div className="materia">
@@ -49,11 +60,20 @@ export function Game() {
           </div>
         </header>
 
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col px-4 pb-16 pt-10 sm:px-8 lg:px-16 lg:pt-14">
+        <div
+          className={[
+            "mx-auto flex w-full max-w-[1440px] flex-col px-4 sm:px-8 lg:px-16",
+            compactShell
+              ? "pb-3 pt-3 lg:h-[calc(100dvh-4rem)] lg:min-h-0 lg:overflow-hidden lg:pb-2 lg:pt-3"
+              : "pb-16 pt-10 lg:pt-14",
+          ].join(" ")}
+        >
           {showItemHeader && (
             <div className="mb-8 flex flex-col justify-between gap-5 lg:mb-10 lg:flex-row lg:items-end">
               <div className="max-w-4xl">
-                <p className="materia-label mb-4">Daily analysis // {state.dateKey}</p>
+                <p className="materia-label mb-4">
+                  Daily analysis // {state.dateKey}
+                </p>
                 <h1 className="text-4xl font-bold tracking-[-0.035em] text-[#dae2fd] sm:text-5xl">
                   {item.name}
                 </h1>
@@ -68,21 +88,26 @@ export function Game() {
             </div>
           )}
 
-          <main className="materia-grid-glow">
+          <main
+            className={[
+              "materia-grid-glow",
+              compactShell ? "min-h-0 flex-1" : "",
+            ].join(" ")}
+          >
             {state.phase === "round1" ? (
               <Round1
                 item={item}
                 round1={state.round1}
                 onSubmit={submitRound1}
-                onContinue={advancePhase}
+                onReplay={replayStage}
               />
             ) : state.phase === "round2" ? (
               <Round2
                 item={item}
                 round2={state.round2}
-                onReorder={updateRound2Order}
+                onReaction={recordChamberReaction}
                 onSubmit={submitRound2}
-                onContinue={advancePhase}
+                onReplay={replayStage}
               />
             ) : state.phase === "round3" ? (
               <Round3
@@ -90,12 +115,27 @@ export function Game() {
                 round3={state.round3}
                 onUpdateGuess={updateRound3Guess}
                 onSubmit={submitRound3}
-                onContinue={advancePhase}
+                onReplay={replayStage}
               />
             ) : (
-              <EndScreen item={item} state={state} />
+              <EndScreen
+                item={item}
+                state={state}
+                onPlayAgain={playAgain}
+              />
             )}
           </main>
+
+          <StageNav
+            phase={state.phase}
+            canGoBack={canGoBack}
+            canGoNext={canGoNext}
+            canReplay={canReplayStage}
+            onBack={goBack}
+            onNext={goNext}
+            onReplay={state.phase === "end" ? playAgain : replayStage}
+            compact={compactShell}
+          />
         </div>
       </div>
     </div>

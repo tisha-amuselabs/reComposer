@@ -37,44 +37,11 @@ type WorkspaceProps = {
   disabled: boolean;
   inventoryGhost: InventoryGhost | null;
   failPulse?: boolean;
+  selectedIds: string[];
   onMove: (instanceId: string, x: number, y: number) => void;
-  /**
-   * Dropped one canvas instance onto another.
-   * Return true if combine succeeded; false to snap back.
-   */
-  onCombineInstances: (
-    draggedId: string,
-    targetId: string,
-    dropX: number,
-    dropY: number,
-  ) => boolean;
+  onToggleSelect: (instanceId: string) => void;
+  onClearSelection: () => void;
 };
-
-function overlaps(
-  ax: number,
-  ay: number,
-  bx: number,
-  by: number,
-  size = HIT_SIZE,
-): boolean {
-  return (
-    ax < bx + size && ax + size > bx && ay < by + size && ay + size > by
-  );
-}
-
-export function findOverlapTarget(
-  instances: CanvasInstance[],
-  excludeId: string | null,
-  x: number,
-  y: number,
-): CanvasInstance | null {
-  for (let i = instances.length - 1; i >= 0; i--) {
-    const inst = instances[i];
-    if (excludeId && inst.instanceId === excludeId) continue;
-    if (overlaps(x, y, inst.x, inst.y)) return inst;
-  }
-  return null;
-}
 
 export function clientToCanvasLocal(
   surface: HTMLDivElement,
@@ -103,11 +70,13 @@ function TileFace({
   size = HIT_SIZE,
   popping,
   dragging,
+  selected,
 }: {
   itemId: ItemId;
   size?: number;
   popping?: boolean;
   dragging?: boolean;
+  selected?: boolean;
 }) {
   const item = items[itemId];
   const [showImg, setShowImg] = useState(true);
@@ -122,7 +91,12 @@ function TileFace({
       style={{ width: size }}
     >
       <span
-        className="relative flex items-center justify-center overflow-hidden rounded-sm border border-[#1a1510]/25"
+        className={[
+          "relative flex items-center justify-center overflow-hidden rounded-sm border transition",
+          selected
+            ? "border-[#1a1510] ring-2 ring-[#1a1510]/35"
+            : "border-[#1a1510]/25",
+        ].join(" ")}
         style={{
           width: size,
           height: size,
@@ -157,6 +131,7 @@ type CanvasDrag = {
   pointerId: number;
   offsetX: number;
   offsetY: number;
+  moved: boolean;
 };
 
 export function Workspace({
@@ -166,8 +141,10 @@ export function Workspace({
   disabled,
   inventoryGhost,
   failPulse = false,
+  selectedIds,
   onMove,
-  onCombineInstances,
+  onToggleSelect,
+  onClearSelection,
 }: WorkspaceProps) {
   const dragRef = useRef<CanvasDrag | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -179,33 +156,14 @@ export function Workspace({
       const current = dragRef.current;
       if (!current || current.pointerId !== pointerId) return;
 
-      const inst = instancesRef.current.find(
-        (i) => i.instanceId === current.instanceId,
-      );
-      if (inst) {
-        const target = findOverlapTarget(
-          instancesRef.current,
-          current.instanceId,
-          inst.x,
-          inst.y,
-        );
-        if (target) {
-          const ok = onCombineInstances(
-            current.instanceId,
-            target.instanceId,
-            inst.x,
-            inst.y,
-          );
-          if (!ok) {
-            onMove(current.instanceId, current.originX, current.originY);
-          }
-        }
+      if (!current.moved) {
+        onToggleSelect(current.instanceId);
       }
 
       dragRef.current = null;
       setDraggingId(null);
     },
-    [onCombineInstances, onMove],
+    [onToggleSelect],
   );
 
   useEffect(() => {
@@ -219,7 +177,11 @@ export function Workspace({
         local.x - current.offsetX,
         local.y - current.offsetY,
       );
-      onMove(current.instanceId, pos.x, pos.y);
+      const dist = Math.hypot(pos.x - current.originX, pos.y - current.originY);
+      if (dist > 6) current.moved = true;
+      if (current.moved) {
+        onMove(current.instanceId, pos.x, pos.y);
+      }
     };
 
     const onUpWin = (e: PointerEvent) => {
@@ -253,6 +215,7 @@ export function Workspace({
       pointerId: e.pointerId,
       offsetX: local.x - inst.x,
       offsetY: local.y - inst.y,
+      moved: false,
     };
     setDraggingId(inst.instanceId);
   };
@@ -268,34 +231,42 @@ export function Workspace({
           "alchemy-workspace relative h-[min(52vh,28rem)] w-full overflow-hidden rounded-sm border border-[#1a1510]/20 touch-none",
           failPulse ? "alchemy-shake" : "",
         ].join(" ")}
+        onPointerDown={() => {
+          if (!disabled && !busy) onClearSelection();
+        }}
       >
         <p className="pointer-events-none absolute inset-x-0 top-3 text-center font-[family-name:var(--font-eb-garamond)] text-sm italic text-[#1a1510]/30">
-          Drag items onto each other
+          Select materials, then use an action
         </p>
 
-        {instances.map((inst) => (
-          <div
-            key={inst.instanceId}
-            role="button"
-            tabIndex={disabled || busy ? -1 : 0}
-            aria-label={items[inst.itemId].name}
-            className={[
-              "absolute select-none outline-none",
-              disabled || busy
-                ? "cursor-default"
-                : "cursor-grab active:cursor-grabbing",
-              draggingId === inst.instanceId ? "z-20" : "z-10",
-            ].join(" ")}
-            style={{ left: inst.x, top: inst.y }}
-            onPointerDown={(e) => onInstancePointerDown(inst, e)}
-          >
-            <TileFace
-              itemId={inst.itemId}
-              popping={inst.popping}
-              dragging={draggingId === inst.instanceId}
-            />
-          </div>
-        ))}
+        {instances.map((inst) => {
+          const selected = selectedIds.includes(inst.instanceId);
+          return (
+            <div
+              key={inst.instanceId}
+              role="button"
+              tabIndex={disabled || busy ? -1 : 0}
+              aria-label={items[inst.itemId].name}
+              aria-pressed={selected}
+              className={[
+                "absolute select-none outline-none",
+                disabled || busy
+                  ? "cursor-default"
+                  : "cursor-grab active:cursor-grabbing",
+                draggingId === inst.instanceId ? "z-20" : "z-10",
+              ].join(" ")}
+              style={{ left: inst.x, top: inst.y }}
+              onPointerDown={(e) => onInstancePointerDown(inst, e)}
+            >
+              <TileFace
+                itemId={inst.itemId}
+                popping={inst.popping}
+                dragging={draggingId === inst.instanceId}
+                selected={selected}
+              />
+            </div>
+          );
+        })}
 
         {inventoryGhost && (
           <div

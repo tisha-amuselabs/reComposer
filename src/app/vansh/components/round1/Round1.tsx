@@ -19,12 +19,12 @@ export function Round1({
   item,
   round1,
   onSubmit,
-  onContinue,
+  onReplay,
 }: {
   item: ItemOfDay;
   round1: Round1State;
   onSubmit: (assignments: (string | null)[]) => void;
-  onContinue: () => void;
+  onReplay: () => void;
 }) {
   const [draft, setDraft] = useState<Round1Draft>(() => ({
     assignments: Array(item.composition.length).fill(null),
@@ -33,7 +33,9 @@ export function Round1({
   const [showPeriodicTable, setShowPeriodicTable] = useState(false);
 
   if (round1.submitted) {
-    return <Round1Results item={item} round1={round1} onContinue={onContinue} />;
+    return (
+      <Round1Results item={item} round1={round1} onReplay={onReplay} />
+    );
   }
 
   function pickElement(symbol: string) {

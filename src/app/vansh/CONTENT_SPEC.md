@@ -41,11 +41,38 @@ interface ItemOfDay {
   name: string; // display name, e.g. "Pencil lead"
   tagline: string; // one punchy sentence of flavor text
   composition: ElementGuessTarget[]; // top elements by mass, MOST to LEAST, max 5
-  rawMaterials: string[]; // plain-language precursor materials
-  steps: ManufacturingStep[]; // 4-6 steps, in the REAL correct order
+  rawMaterials: string[]; // plain-language precursor materials (display list)
+  steps: ManufacturingStep[]; // 4-6 steps, in the REAL correct order (scoring key)
+  processLab: ProcessLab; // reaction chamber: materials + actions + recipes
   trivia: string[]; // 2-4 short standalone fun facts
   origin: ItemOrigin;
 }
+
+interface ProcessMaterial { id: string; name: string; accent?: string }
+interface ProcessAction { id: string; name: string; arity: 1 | 2; blurb: string }
+interface ProcessRecipe {
+  action: string;
+  inputs: string[];      // 1 or 2 material ids
+  results: string[];     // 1+ products (breakdown may return 2)
+  stepId?: string;       // optional link to ManufacturingStep.id for scoring
+}
+interface ProcessLab {
+  materials: ProcessMaterial[];
+  actions: ProcessAction[];
+  recipes: ProcessRecipe[];
+  startIds: string[];    // starting inventory
+  targetId: string;      // winning product the player must synthesize
+  hints: ProcessHint[];  // escalating process hints
+}
+
+interface ProcessHint {
+  id: string;
+  level: 1 | 2 | 3;      // 1 flavor, 2 process, 3 near-spoiler
+  whenHas?: string[];    // optional: show when these materials are known
+  whenMissing?: string[];
+  text: string;
+}
+
 ```
 
 ## Exact output template
@@ -99,6 +126,13 @@ export const ___EXPORT_NAME___: ItemOfDay = {
   in the data itself.
 - **steps**: the real, objectively-correct manufacturing sequence — this
   becomes the puzzle's scored answer, so get the order right. 4-6 steps.
+- **processLab**: playable reaction chamber that reconstructs those steps.
+  `recipes` should cover a path from `startIds` to `targetId`. Link key
+  recipes to `stepId` values from `steps` so scoring can mark operations
+  as reconstructed. Include a `break` action with a few reverse recipes.
+  Keep arity to 1 or 2 materials per action. Provide 4–6 `hints` that
+  escalate from flavor (1) to process (2) to near-spoiler (3), preferably
+  gated with `whenHas` / `whenMissing` material ids.
 - **origin**: pick one specific, mainstream-documented "first invented/made"
   year + place for this exact version of the item. If the date is disputed
   or fuzzy, still commit to one answer for scoring, and put the nuance in

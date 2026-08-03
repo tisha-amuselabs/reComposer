@@ -11,11 +11,11 @@ import {
 export function Round1Results({
   item,
   round1,
-  onContinue,
+  onReplay,
 }: {
   item: ItemOfDay;
   round1: Round1State;
-  onContinue: () => void;
+  onReplay: () => void;
 }) {
   const score = round1Score(round1.feedback);
   const maxPoints = item.composition.length * ROUND1_EXACT_POINTS;
@@ -86,7 +86,9 @@ export function Round1Results({
         })}
       </div>
 
-      <Button onClick={onContinue}>Proceed to process</Button>
+      <Button variant="ghost" onClick={onReplay}>
+        Play this stage again
+      </Button>
     </section>
   );
 }

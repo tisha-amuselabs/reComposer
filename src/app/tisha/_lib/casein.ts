@@ -1,6 +1,5 @@
 /**
- * @deprecated Import from `./puzzles` and `./items` instead.
- * Kept so older imports of the first puzzle still resolve.
+ * @deprecated Import from `./puzzles`, `./items`, and `./actions` instead.
  */
 import { items } from "./items";
 import { puzzles } from "./puzzles";

@@ -4,8 +4,17 @@ import { TriviaReveal } from "./TriviaReveal";
 import { ShareCard } from "./ShareCard";
 import { ComeBackTomorrow } from "./ComeBackTomorrow";
 import { ROUND1_EXACT_POINTS, round1Score } from "../round1/round1.logic";
+import { Button } from "../Button";
 
-export function EndScreen({ item, state }: { item: ItemOfDay; state: DailyGameState }) {
+export function EndScreen({
+  item,
+  state,
+  onPlayAgain,
+}: {
+  item: ItemOfDay;
+  state: DailyGameState;
+  onPlayAgain: () => void;
+}) {
   const compositionScore = round1Score(state.round1.feedback);
   const compositionMaxPoints = item.composition.length * ROUND1_EXACT_POINTS;
   const processScore = state.round2.feedback?.filter((value) => value === "green").length ?? 0;
@@ -20,6 +29,9 @@ export function EndScreen({ item, state }: { item: ItemOfDay; state: DailyGameSt
         <p className="materia-muted mx-auto mt-4 max-w-2xl text-base leading-7 sm:text-lg">
           Material identified through structural, chemical, and historical analysis.
         </p>
+        <div className="mt-6 flex justify-center">
+          <Button onClick={onPlayAgain}>Play again</Button>
+        </div>
       </div>
 
       <section className="materia-panel relative overflow-hidden rounded-xl p-6 sm:p-10">
@@ -44,10 +56,13 @@ export function EndScreen({ item, state }: { item: ItemOfDay; state: DailyGameSt
             </div>
             <div className="materia-subpanel rounded-sm p-4">
               <p className="font-mono text-[10px] uppercase tracking-wider text-[#8e9ab1]">
-                Process
+                How is it made?
               </p>
               <p className="mt-2 text-2xl font-semibold text-[#dae2fd]">
                 {processScore}/{item.steps.length}
+              </p>
+              <p className="mt-1 font-mono text-[9px] uppercase tracking-wider text-[#8e9ab1]">
+                operations reconstructed
               </p>
             </div>
             <div className="materia-subpanel rounded-sm p-4">
