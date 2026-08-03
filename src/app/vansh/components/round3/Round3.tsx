@@ -6,6 +6,8 @@ import { EraSlider } from "./EraSlider";
 import { WorldMapGuesser } from "./WorldMapGuesser";
 import { Round3Results } from "./Round3Results";
 import { Button } from "../Button";
+import { HintPanel } from "../HintPanel";
+import { requestHint } from "../../lib/requestHint";
 import { YEAR_GUESS_MAX, YEAR_GUESS_MIN } from "./round3.logic";
 
 export function Round3({
@@ -88,6 +90,18 @@ export function Round3({
           onChange={(y) => onUpdateGuess({ year: y })}
         />
       </section>
+
+      <div className="mt-6">
+        <HintPanel
+          onRequestHint={() =>
+            requestHint(item.id, "round3", {
+              year,
+              lat: round3.guess.lat,
+              lng: round3.guess.lng,
+            })
+          }
+        />
+      </div>
 
       <div className="mt-6 flex justify-end">
         <Button disabled={!hasLocation} onClick={onSubmit}>

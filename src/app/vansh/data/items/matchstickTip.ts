@@ -50,6 +50,43 @@ export const MATCHSTICK_TIP: ItemOfDay = {
       description: "Dried matches are sorted, counted, and boxed for sale.",
     },
   ],
+  // Little-Alchemy-style combination chain reconstructing the real process:
+  // oxidizer + fuel -> paste -> bound -> stirred -> dipped -> dried tip.
+  alchemy: {
+    nodes: {
+      wood: { id: "wood", label: "Wood (splint)", emoji: "🪵" },
+      "potassium-chlorate": { id: "potassium-chlorate", label: "Potassium chlorate", emoji: "🧂" },
+      "antimony-trisulfide": { id: "antimony-trisulfide", label: "Antimony trisulfide", emoji: "🪨" },
+      sulfur: { id: "sulfur", label: "Sulfur", emoji: "🟡" },
+      binder: { id: "binder", label: "Starch / gum binder", emoji: "🧴" },
+      stir: { id: "stir", label: "Stir", emoji: "🌀" },
+      heat: { id: "heat", label: "Heat", emoji: "🔥" },
+      "oxidizer-blend": { id: "oxidizer-blend", label: "Oxidizer blend", emoji: "⚗️" },
+      "raw-paste": { id: "raw-paste", label: "Raw paste", emoji: "🥣" },
+      "bound-paste": { id: "bound-paste", label: "Bound paste", emoji: "🧪" },
+      "chemical-paste": { id: "chemical-paste", label: "Chemical paste", emoji: "🧫" },
+      "dipped-splint": { id: "dipped-splint", label: "Dipped splint", emoji: "🖊️" },
+      "matchstick-tip": { id: "matchstick-tip", label: "Matchstick tip", emoji: "🔥" },
+    },
+    startIds: [
+      "wood",
+      "potassium-chlorate",
+      "antimony-trisulfide",
+      "sulfur",
+      "binder",
+      "stir",
+      "heat",
+    ],
+    combinations: [
+      { inputs: ["potassium-chlorate", "antimony-trisulfide"], result: "oxidizer-blend" },
+      { inputs: ["oxidizer-blend", "sulfur"], result: "raw-paste" },
+      { inputs: ["raw-paste", "binder"], result: "bound-paste" },
+      { inputs: ["bound-paste", "stir"], result: "chemical-paste" },
+      { inputs: ["chemical-paste", "wood"], result: "dipped-splint" },
+      { inputs: ["dipped-splint", "heat"], result: "matchstick-tip" },
+    ],
+    targetId: "matchstick-tip",
+  },
   origin: {
     year: 1826,
     yearLabel: "1826",
@@ -64,4 +101,10 @@ export const MATCHSTICK_TIP: ItemOfDay = {
     "Walker never patented his invention, so other manufacturers quickly copied and refined the formula.",
     "Early friction matches were notoriously unstable — they could ignite from the friction of just walking around in your pocket.",
   ],
+  compositionExplanation:
+    "A match head needs an oxidizer to supply oxygen for combustion and a fuel for that oxygen to burn. Potassium chlorate (KClO₃) is the oxidizer — and since each molecule is nearly 40% oxygen by weight, oxygen ends up the single biggest element overall, ahead of the potassium and chlorine that make up the rest of that same compound. Antimony trisulfide is the fuel that actually ignites, and sulfur adds extra kindling.",
+  processExplanation:
+    "The oxidizer and fuel are combined first because that reactive pair is the chemical heart of the head — everything else just shapes and stabilizes it. Sulfur boosts the mix's flammability, a binder holds the powder together as a paste, and only once that paste is stirred smooth does it get dipped onto the wood. Heat comes last: it's not an ingredient, it's what dries and hardens the dipped paste into a stable, strikeable head.",
+  originExplanation:
+    "English chemist John Walker stumbled onto this exact formula in 1826 in Stockton-on-Tees while trying to remove a dried chemical coating from a stirring stick — it caught fire when scraped against his hearth. It predates the later 'safety match' (with red phosphorus isolated on the strike strip) by decades, making it the true origin point for a match head with this composition.",
 };

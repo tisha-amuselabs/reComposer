@@ -3,7 +3,7 @@
 import { useDailyGame } from "../lib/useDailyGame";
 import { ProgressDots } from "./ProgressDots";
 import { Round1 } from "./round1/Round1";
-import { Round2 } from "./round2/Round2";
+import { AlchemyStation } from "./alchemy/AlchemyStation";
 import { Round3 } from "./round3/Round3";
 import { EndScreen } from "./end/EndScreen";
 
@@ -13,8 +13,7 @@ export function Game() {
     state,
     isLoaded,
     submitRound1,
-    updateRound2Order,
-    submitRound2,
+    submitAlchemy,
     updateRound3Guess,
     submitRound3,
     advancePhase,
@@ -77,11 +76,10 @@ export function Game() {
                 onContinue={advancePhase}
               />
             ) : state.phase === "round2" ? (
-              <Round2
+              <AlchemyStation
                 item={item}
-                round2={state.round2}
-                onReorder={updateRound2Order}
-                onSubmit={submitRound2}
+                alchemy={state.alchemy}
+                onSubmit={submitAlchemy}
                 onContinue={advancePhase}
               />
             ) : state.phase === "round3" ? (

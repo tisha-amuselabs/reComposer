@@ -4,6 +4,11 @@ Give this whole file to your content-curating AI agent as its instructions. It
 describes exactly one deliverable: a single TypeScript file for one new
 "Item of the Day" entry, ready to paste into this codebase with no edits.
 
+Live AI hints (via `/api/hint`, see bottom of this file) are generated
+automatically from whatever data you provide here — there is nothing to
+author for hints specifically. Just make sure every field below is accurate,
+since the hint prompts quote your data directly.
+
 ## Your job
 
 Research one everyday manufactured/produced item and return **one TypeScript
@@ -26,6 +31,30 @@ interface ManufacturingStep {
   description: string; // one sentence, plain language
 }
 
+// Little-Alchemy-style combination graph for the "Alchemy station" round:
+// start with `startIds`, combine two nodes at a time, and if a pair matches
+// a `combinations` entry you get the result node. Chain forward until you
+// reach `targetId` (should be the final node representing the item itself).
+type AlchemyActionId = "heat" | "cool" | "pressurize" | "stir"; // reuse these four verbs where sensible; you can name additional simple actions if none of these fit, but prefer reuse
+
+interface AlchemyNode {
+  id: string; // kebab-case, unique within this item's alchemy graph
+  label: string; // display name, e.g. "Oxidizer blend"
+  emoji: string; // one emoji, decorative tile icon
+}
+
+interface AlchemyCombination {
+  inputs: [string, string]; // two existing node ids (order doesn't matter)
+  result: string; // the node id this combination produces
+}
+
+interface AlchemyRecipe {
+  nodes: Record<string, AlchemyNode>; // EVERY node used anywhere below, keyed by its own id
+  startIds: string[]; // node ids the player begins with in their inventory (raw materials + action tools)
+  combinations: AlchemyCombination[]; // 4-7 steps, chained start->intermediate(s)->target
+  targetId: string; // must equal the id of the final node, reached by the last combination
+}
+
 interface ItemOrigin {
   year: number; // best-known year of first invention/production of THIS item
   yearLabel: string; // usually just String(year), e.g. "1826"
@@ -42,9 +71,16 @@ interface ItemOfDay {
   tagline: string; // one punchy sentence of flavor text
   composition: ElementGuessTarget[]; // top elements by mass, MOST to LEAST, max 5
   rawMaterials: string[]; // plain-language precursor materials
-  steps: ManufacturingStep[]; // 4-6 steps, in the REAL correct order
-  trivia: string[]; // 2-4 short standalone fun facts
+  steps: ManufacturingStep[]; // 4-6 steps, in the REAL correct order (deprecated round, kept for compatibility — still fill it in)
+  alchemy: AlchemyRecipe;
   origin: ItemOrigin;
+  trivia: string[]; // 2-4 short standalone fun facts, shown at the very end
+  // Shown on each round's own results screen, right after the reveal and
+  // before "Continue" — a short, plain-language "why is the answer this?"
+  // paragraph. These are NOT trivia — they explain the reasoning, not facts.
+  compositionExplanation: string; // why these elements/ratios, in these amounts
+  processExplanation: string; // why the combination chain happens in this order
+  originExplanation: string; // why this specific year + place is the real answer
 }
 ```
 
@@ -75,6 +111,20 @@ export const ___EXPORT_NAME___: ItemOfDay = {
     { id: "___", label: "___", description: "___" },
     { id: "___", label: "___", description: "___" },
   ],
+  alchemy: {
+    nodes: {
+      "___node-id___": { id: "___node-id___", label: "___Label___", emoji: "___" },
+      // ...one entry for every id referenced in startIds/combinations below
+    },
+    startIds: ["___", "___", "___", "___", "___"],
+    combinations: [
+      { inputs: ["___", "___"], result: "___" },
+      { inputs: ["___", "___"], result: "___" },
+      { inputs: ["___", "___"], result: "___" },
+      { inputs: ["___", "___"], result: "___" },
+    ],
+    targetId: "___final-node-id-matching-last-combination-result___",
+  },
   origin: {
     year: ___,
     yearLabel: "___",
@@ -85,6 +135,9 @@ export const ___EXPORT_NAME___: ItemOfDay = {
     maxYear: 2026,
   },
   trivia: ["___", "___", "___"],
+  compositionExplanation: "___",
+  processExplanation: "___",
+  originExplanation: "___",
 };
 ```
 
@@ -97,8 +150,24 @@ export const ___EXPORT_NAME___: ItemOfDay = {
   (expected) if the top 5 don't sum to 100 — minor binders/trace elements are
   omitted. If no authoritative single assay exists, say so in `trivia`, not
   in the data itself.
-- **steps**: the real, objectively-correct manufacturing sequence — this
-  becomes the puzzle's scored answer, so get the order right. 4-6 steps.
+- **steps**: the real, objectively-correct manufacturing sequence, 4-6 steps.
+  This round is currently unused in the live game (superseded by `alchemy`)
+  but the field is still required — fill it in accurately anyway, both for
+  forward-compatibility and because `alchemy` should tell the same story.
+- **alchemy**: this drives the live "Alchemy station" round, so it has to
+  actually work as a puzzle:
+  - Every combination's two `inputs` must each be either a `startId` or the
+    `result` of an earlier combination — never something not yet reachable.
+  - The final combination's `result` must equal `targetId`.
+  - `startIds` should be your `rawMaterials` (as their own node ids — reuse
+    consistent kebab-case ids, they don't have to match the `rawMaterials`
+    strings verbatim) plus 1-3 action-tool nodes (`heat`, `stir`, `cool`,
+    `pressurize`, or another simple verb if none fit) representing real steps
+    from your `steps` list that aren't "ingredients" per se.
+  - Aim for 4-7 total combinations — enough to feel like a real process,
+    short enough to stay solvable without a hint.
+  - Every node you reference (in `startIds`, `inputs`, or `result`) must have
+    a matching entry in `nodes`, and vice versa — no orphans either way.
 - **origin**: pick one specific, mainstream-documented "first invented/made"
   year + place for this exact version of the item. If the date is disputed
   or fuzzy, still commit to one answer for scoring, and put the nuance in
@@ -109,6 +178,13 @@ export const ___EXPORT_NAME___: ItemOfDay = {
 - **trivia**: original phrasing, 2-4 sentences, each one standalone (players
   see these without other context). This is also where you hedge any
   approximations or historical disputes from the fields above.
+- **compositionExplanation / processExplanation / originExplanation**: 2-4
+  sentences each, plain language, written for someone who just saw the
+  answer and wants the "oh, that's why" — not a restatement of the data, the
+  underlying reasoning (e.g. *why* an oxidizer contributes the most oxygen by
+  mass, *why* combination order can't be swapped, *why* that year/city and
+  not another). These are shown mid-game, so don't reference `trivia` content
+  or assume the player has finished the whole item yet.
 - No copyrighted text — paraphrase everything in your own words.
 
 ## Valid element symbols (only use these)
@@ -123,6 +199,7 @@ Lr, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn, Nh, Fl, Mc, Lv, Ts, Og
 ## Ids already taken
 
 - `matchstick-tip`
+- `lithium-ion-battery`
 
 ## Worked example (existing, shipped item)
 
@@ -152,6 +229,33 @@ export const MATCHSTICK_TIP: ItemOfDay = {
     { id: "dry", label: "Dry the coated heads", description: "..." },
     { id: "package", label: "Package the finished matches", description: "..." },
   ],
+  alchemy: {
+    nodes: {
+      wood: { id: "wood", label: "Wood (splint)", emoji: "🪵" },
+      "potassium-chlorate": { id: "potassium-chlorate", label: "Potassium chlorate", emoji: "🧂" },
+      "antimony-trisulfide": { id: "antimony-trisulfide", label: "Antimony trisulfide", emoji: "🪨" },
+      sulfur: { id: "sulfur", label: "Sulfur", emoji: "🟡" },
+      binder: { id: "binder", label: "Starch / gum binder", emoji: "🧴" },
+      stir: { id: "stir", label: "Stir", emoji: "🌀" },
+      heat: { id: "heat", label: "Heat", emoji: "🔥" },
+      "oxidizer-blend": { id: "oxidizer-blend", label: "Oxidizer blend", emoji: "⚗️" },
+      "raw-paste": { id: "raw-paste", label: "Raw paste", emoji: "🥣" },
+      "bound-paste": { id: "bound-paste", label: "Bound paste", emoji: "🧪" },
+      "chemical-paste": { id: "chemical-paste", label: "Chemical paste", emoji: "🧫" },
+      "dipped-splint": { id: "dipped-splint", label: "Dipped splint", emoji: "🖊️" },
+      "matchstick-tip": { id: "matchstick-tip", label: "Matchstick tip", emoji: "🔥" },
+    },
+    startIds: ["wood", "potassium-chlorate", "antimony-trisulfide", "sulfur", "binder", "stir", "heat"],
+    combinations: [
+      { inputs: ["potassium-chlorate", "antimony-trisulfide"], result: "oxidizer-blend" },
+      { inputs: ["oxidizer-blend", "sulfur"], result: "raw-paste" },
+      { inputs: ["raw-paste", "binder"], result: "bound-paste" },
+      { inputs: ["bound-paste", "stir"], result: "chemical-paste" },
+      { inputs: ["chemical-paste", "wood"], result: "dipped-splint" },
+      { inputs: ["dipped-splint", "heat"], result: "matchstick-tip" },
+    ],
+    targetId: "matchstick-tip",
+  },
   origin: {
     year: 1826,
     yearLabel: "1826",
@@ -165,6 +269,12 @@ export const MATCHSTICK_TIP: ItemOfDay = {
     "Most historians credit English chemist John Walker with inventing the friction match in 1826 — though he didn't sell his first box until 1827.",
     "...",
   ],
+  compositionExplanation:
+    "A match head needs an oxidizer to supply oxygen for combustion and a fuel for that oxygen to burn. Potassium chlorate (KClO₃) is the oxidizer — and since each molecule is nearly 40% oxygen by weight, oxygen ends up the single biggest element overall...",
+  processExplanation:
+    "The oxidizer and fuel are combined first because that reactive pair is the chemical heart of the head — everything else just shapes and stabilizes it...",
+  originExplanation:
+    "English chemist John Walker stumbled onto this exact formula in 1826 in Stockton-on-Tees while trying to remove a dried chemical coating from a stirring stick...",
 };
 ```
 
@@ -172,3 +282,12 @@ export const MATCHSTICK_TIP: ItemOfDay = {
 
 Return exactly one fenced ` ```ts ` code block with the filled-in template.
 No prose before or after it.
+
+## About hints (informational, nothing to do here)
+
+The live game has a "Get a hint" button on each round, backed by
+`src/app/api/hint/route.ts`. It sends whatever data you authored above (the
+true composition/recipe/origin, plus the player's current progress) to
+Gemini with instructions to nudge without revealing the answer. Accurate,
+well-written fields here directly become better hints — there's no separate
+hint content to write.

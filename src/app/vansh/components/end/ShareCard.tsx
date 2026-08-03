@@ -19,7 +19,11 @@ function buildShareText(item: ItemOfDay, state: DailyGameState): string {
     return color ? SLOT_EMOJI[color] : "⬜";
   }).join("");
 
-  const round2Line = (state.round2.feedback ?? []).map((c) => SLOT_EMOJI[c]).join("");
+  const alchemyTotal = state.alchemy.totalRequired ?? 0;
+  const alchemyCorrect = state.alchemy.correctCount ?? 0;
+  const alchemyLine = Array.from({ length: alchemyTotal }, (_, i) =>
+    i < alchemyCorrect ? "🟩" : "⬜"
+  ).join("");
 
   const yearBand =
     state.round3.yearDiff !== null
@@ -36,7 +40,7 @@ function buildShareText(item: ItemOfDay, state: DailyGameState): string {
     state.dateKey,
     "",
     `Round 1: ${round1Line}`,
-    `Round 2: ${round2Line}`,
+    `Round 2: ${alchemyLine}`,
     `Round 3: ${round3Line}`,
   ].join("\n");
 }

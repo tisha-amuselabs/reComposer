@@ -1,5 +1,10 @@
 "use client";
 
+// Deprecated: this manufacturing-sequence round has been replaced by the
+// Little-Alchemy-style mixing mechanic in `components/alchemy/`. Kept
+// unwired (not imported by Game.tsx) rather than deleted, in case the
+// step-ordering mechanic is wanted again later.
+
 import type { ItemOfDay } from "../../types/item";
 import type { Round2State } from "../../types/game-state";
 import { ManufacturingBoard } from "./ManufacturingBoard";

@@ -86,6 +86,11 @@ export function Round1Results({
         })}
       </div>
 
+      <div className="materia-subpanel rounded-sm p-4">
+        <p className="materia-label text-[#8e9ab1]">Why this composition?</p>
+        <p className="mt-2 text-sm leading-6 text-[#c4c6cd]">{item.compositionExplanation}</p>
+      </div>
+
       <Button onClick={onContinue}>Proceed to process</Button>
     </section>
   );

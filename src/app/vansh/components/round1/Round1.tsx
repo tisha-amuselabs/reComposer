@@ -8,6 +8,8 @@ import { CompositionSlots } from "./CompositionSlots";
 import { ElementSearch } from "./ElementSearch";
 import { Round1Results } from "./Round1Results";
 import { Button } from "../Button";
+import { HintPanel } from "../HintPanel";
+import { requestHint } from "../../lib/requestHint";
 import { ELEMENT_BY_SYMBOL } from "../../data/periodicTable";
 
 interface Round1Draft {
@@ -140,6 +142,12 @@ export function Round1({
           activeSlot={draft.activeSlot}
           onSelectSlot={selectSlot}
         />
+
+        <div className="mt-5">
+          <HintPanel
+            onRequestHint={() => requestHint(item.id, "round1", { assignments: draft.assignments })}
+          />
+        </div>
 
         <Button
           className="mt-7 w-full self-stretch"

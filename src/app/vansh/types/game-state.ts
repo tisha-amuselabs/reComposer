@@ -8,11 +8,21 @@ export interface Round1State {
   feedback: SlotColor[] | null;
 }
 
+// Deprecated: superseded by AlchemyState / the alchemy/ component folder.
+// Kept (unwired) so the old manufacturing-sequence round still compiles.
 export interface Round2State {
   shuffledOrder: string[];
   order: string[];
   submitted: boolean;
   feedback: SlotColor[] | null;
+}
+
+export interface AlchemyState {
+  submitted: boolean;
+  solved: boolean;
+  correctCount: number | null;
+  totalRequired: number | null;
+  successRate: number | null;
 }
 
 export interface Round3Guess {
@@ -34,6 +44,6 @@ export interface DailyGameState {
   itemId: string;
   phase: GamePhase;
   round1: Round1State;
-  round2: Round2State;
+  alchemy: AlchemyState;
   round3: Round3State;
 }

@@ -167,7 +167,7 @@ export function GlobeCanvas({
         ringsData={markers}
         ringLat="lat"
         ringLng="lng"
-        ringColor={(marker) => [(marker as GlobeMarker).color, "rgba(0,0,0,0)"]}
+        ringColor={(marker: object) => [(marker as GlobeMarker).color, "rgba(0,0,0,0)"]}
         ringMaxRadius={3}
         ringPropagationSpeed={1}
         ringRepeatPeriod={900}

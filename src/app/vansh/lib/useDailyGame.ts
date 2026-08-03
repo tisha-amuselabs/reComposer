@@ -7,7 +7,7 @@ import { getLocalDateKey, itemForDate } from "./date";
 import { readStorage, writeStorage } from "./storage";
 import { haversineKm } from "./haversine";
 import { computeRound1Feedback } from "../components/round1/round1.logic";
-import { seededShuffle, computeRound2Feedback } from "../components/round2/round2.logic";
+import { totalSteps } from "../components/alchemy/alchemy.logic";
 
 const SCHEMA_VERSION = 1;
 
@@ -23,8 +23,6 @@ function storageKey(dateKey: string): string {
 }
 
 function createInitialState(item: ItemOfDay, dateKey: string): DailyGameState {
-  const stepIds = item.steps.map((s) => s.id);
-  const shuffledOrder = seededShuffle(stepIds, `${dateKey}:${item.id}`);
   return {
     schemaVersion: SCHEMA_VERSION,
     dateKey,
@@ -35,7 +33,13 @@ function createInitialState(item: ItemOfDay, dateKey: string): DailyGameState {
       submitted: false,
       feedback: null,
     },
-    round2: { shuffledOrder, order: shuffledOrder, submitted: false, feedback: null },
+    alchemy: {
+      submitted: false,
+      solved: false,
+      correctCount: null,
+      totalRequired: null,
+      successRate: null,
+    },
     round3: {
       guess: { year: null, lat: null, lng: null },
       submitted: false,
@@ -63,7 +67,8 @@ function loadInitialSnapshot(): GameSnapshot {
     stored &&
     stored.schemaVersion === SCHEMA_VERSION &&
     stored.dateKey === dateKey &&
-    stored.itemId === todaysItem.id;
+    stored.itemId === todaysItem.id &&
+    "alchemy" in stored;
 
   const initialState = isValid
     ? {
@@ -106,21 +111,22 @@ export function useDailyGame() {
     [state, item, persist]
   );
 
-  const updateRound2Order = useCallback(
-    (order: string[]) => {
-      persist({ ...state, round2: { ...state.round2, order } });
+  const submitAlchemy = useCallback(
+    (result: { solved: boolean; correctCount: number }) => {
+      const total = totalSteps(item.alchemy);
+      persist({
+        ...state,
+        alchemy: {
+          submitted: true,
+          solved: result.solved,
+          correctCount: result.correctCount,
+          totalRequired: total,
+          successRate: total === 0 ? 0 : Math.round((result.correctCount / total) * 100),
+        },
+      });
     },
-    [state, persist]
+    [state, item, persist]
   );
-
-  const submitRound2 = useCallback(() => {
-    const correctOrder = item.steps.map((s) => s.id);
-    const feedback = computeRound2Feedback(state.round2.order, correctOrder);
-    persist({
-      ...state,
-      round2: { ...state.round2, submitted: true, feedback },
-    });
-  }, [state, item, persist]);
 
   const updateRound3Guess = useCallback(
     (partial: Partial<Round3Guess>) => {
@@ -146,8 +152,7 @@ export function useDailyGame() {
     isLoaded: true,
     advancePhase,
     submitRound1,
-    updateRound2Order,
-    submitRound2,
+    submitAlchemy,
     updateRound3Guess,
     submitRound3,
   };

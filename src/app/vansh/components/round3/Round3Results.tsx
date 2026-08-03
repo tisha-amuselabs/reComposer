@@ -67,6 +67,11 @@ export function Round3Results({
         The real answer: <strong>{item.origin.yearLabel}</strong>, {item.origin.locationName}.
       </p>
 
+      <div className="materia-subpanel rounded-sm p-4">
+        <p className="materia-label text-[#8e9ab1]">Why here and then?</p>
+        <p className="mt-2 text-sm leading-6 text-[#c4c6cd]">{item.originExplanation}</p>
+      </div>
+
       <Button onClick={onContinue}>Complete synthesis</Button>
     </section>
   );
