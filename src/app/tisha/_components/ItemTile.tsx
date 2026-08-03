@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type PointerEvent as ReactPointerEvent } from "react";
-import { items } from "../_lib/casein";
+import { items } from "../_lib/items";
 import type { ItemId } from "../_lib/types";
 
 type ItemTileProps = {

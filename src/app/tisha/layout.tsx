@@ -9,8 +9,9 @@ const ebGaramond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Casein Plastic — reComposer",
-  description: "A Little Alchemy–style lab for making casein plastic.",
+  title: "Reinventing the Wheel — reComposer",
+  description:
+    "Little Alchemy–style puzzles that rediscover everyday materials from history.",
 };
 
 export default function TishaLayout({

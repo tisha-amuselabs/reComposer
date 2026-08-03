@@ -1,17 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  eraPlace,
-  history,
-  items,
-  scenario,
-  startIds,
-  targetId,
-  targetLabel,
-} from "../_lib/casein";
 import { combine } from "../_lib/engine";
-import type { ItemId } from "../_lib/types";
+import { items } from "../_lib/items";
+import { puzzles } from "../_lib/puzzles";
+import type { ItemId, Puzzle } from "../_lib/types";
 import "./alchemy.css";
 import { AlchemyModal } from "./AlchemyModal";
 import { Inventory } from "./Inventory";
@@ -37,9 +30,11 @@ const POP_CLEAR_MS = 520;
 
 /** Elegant display of eraPlace, e.g. "1897 · Munich, Germany" */
 function formatEraPlace(raw: string) {
-  const match = raw.match(/^(\d{4})\s+(.+)$/);
-  if (!match) return raw;
-  return `${match[1]} · ${match[2]}`;
+  const bce = raw.match(/^(\d+)\s+BCE\s+(.+)$/i);
+  if (bce) return `${bce[1]} BCE · ${bce[2]}`;
+  const ce = raw.match(/^(\d+)\s+(.+)$/);
+  if (ce) return `${ce[1]} · ${ce[2]}`;
+  return raw;
 }
 
 /** Elapsed seconds → `m:ss` (e.g. `0:45`, `1:23`) */
@@ -55,7 +50,14 @@ function newInstanceId() {
 }
 
 export function Game() {
-  const [inventory, setInventory] = useState<ItemId[]>(startIds);
+  const [puzzleIndex, setPuzzleIndex] = useState(0);
+  const puzzle = puzzles[puzzleIndex];
+  const puzzleRef = useRef(puzzle);
+  puzzleRef.current = puzzle;
+
+  const [inventory, setInventory] = useState<ItemId[]>(() => [
+    ...puzzle.startIds,
+  ]);
   const [instances, setInstances] = useState<CanvasInstance[]>([]);
   const [feedback, setFeedback] = useState<Feedback>({ kind: "idle" });
   const [won, setWon] = useState(false);
@@ -112,6 +114,28 @@ export function Game() {
     return () => window.clearInterval(id);
   }, [showStartModal, won]);
 
+  const resetForPuzzle = useCallback(
+    (next: Puzzle) => {
+      clearTimers();
+      playingRef.current = false;
+      startedAtRef.current = null;
+      invDragRef.current = null;
+      ghostRef.current = null;
+      setInventory([...next.startIds]);
+      setInstances([]);
+      setFeedback({ kind: "idle" });
+      setWon(false);
+      setShowWinModal(false);
+      setShowStartModal(true);
+      setBusy(false);
+      setFailPulse(false);
+      setInventoryGhost(null);
+      setElapsedSec(0);
+      setFinalTimeSec(null);
+    },
+    [clearTimers],
+  );
+
   const beginPlay = useCallback(() => {
     if (playingRef.current) return;
     playingRef.current = true;
@@ -119,6 +143,21 @@ export function Game() {
     setElapsedSec(0);
     setShowStartModal(false);
   }, []);
+
+  const goToPuzzle = useCallback(
+    (index: number) => {
+      const next = puzzles[index];
+      if (!next) return;
+      setPuzzleIndex(index);
+      resetForPuzzle(next);
+    },
+    [resetForPuzzle],
+  );
+
+  const goToNextPuzzle = useCallback(() => {
+    const nextIndex = (puzzleIndex + 1) % puzzles.length;
+    goToPuzzle(nextIndex);
+  }, [goToPuzzle, puzzleIndex]);
 
   const addToInventory = useCallback((id: ItemId) => {
     setInventory((prev) => (prev.includes(id) ? prev : [...prev, id]));
@@ -171,7 +210,8 @@ export function Game() {
     ): boolean => {
       if (busyRef.current || wonRef.current || !playingRef.current) return false;
 
-      const result = combine(a, b);
+      const current = puzzleRef.current;
+      const result = combine(a, b, current.recipes);
       if (!result) {
         setFailPulse(true);
         setFeedback({ kind: "fail" });
@@ -188,7 +228,7 @@ export function Game() {
       spawnAt(result, dropX, dropY, true);
       addToInventory(result);
 
-      if (result === targetId) {
+      if (result === current.targetId) {
         const secs =
           startedAtRef.current !== null
             ? (Date.now() - startedAtRef.current) / 1000
@@ -203,7 +243,7 @@ export function Game() {
 
       settleRef.current = setTimeout(() => {
         setBusy(false);
-        if (result === targetId) {
+        if (result === current.targetId) {
           setShowWinModal(true);
         }
       }, REVEAL_MS);
@@ -349,19 +389,26 @@ export function Game() {
   }, [feedback]);
 
   const locked = busy || won || showStartModal;
-  const eraPlaceDisplay = formatEraPlace(eraPlace);
+  const eraPlaceDisplay = formatEraPlace(puzzle.eraPlace);
   const displayTime = formatElapsed(
     finalTimeSec !== null ? finalTimeSec : elapsedSec,
   );
+  const hasNext = puzzleIndex < puzzles.length - 1;
+  const puzzleProgress = `${puzzleIndex + 1} / ${puzzles.length}`;
 
   const dismissWinModal = useCallback(() => setShowWinModal(false), []);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 sm:gap-6">
-        <h1 className="font-[family-name:var(--font-eb-garamond)] text-xl text-[#1a1510] sm:text-2xl">
-          Can you create <em className="italic">{targetLabel}</em>?
-        </h1>
+        <div className="min-w-0">
+          <p className="mb-1 font-[family-name:var(--font-eb-garamond)] text-[11px] uppercase tracking-[0.2em] text-[#5c5348]">
+            Reinventing the wheel · {puzzleProgress}
+          </p>
+          <h1 className="font-[family-name:var(--font-eb-garamond)] text-xl text-[#1a1510] sm:text-2xl">
+            Can you create <em className="italic">{puzzle.targetLabel}</em>?
+          </h1>
+        </div>
         <div className="flex items-baseline gap-4 sm:gap-6">
           {!showStartModal && (
             <p
@@ -378,36 +425,46 @@ export function Game() {
         </div>
       </header>
 
-      <Workspace
-        instances={instances}
-        surfaceRef={surfaceRef}
-        busy={busy}
-        disabled={won || showStartModal}
-        inventoryGhost={inventoryGhost}
-        failPulse={failPulse}
-        onMove={handleMove}
-        onCombineInstances={handleCombineInstances}
-      />
+      <div className="flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
+        <Inventory
+          ids={inventory}
+          onPointerDragStart={handleInventoryPointerDown}
+          disabled={locked}
+        />
 
-      <div
-        className={[
-          "min-h-[1.75rem] text-center font-[family-name:var(--font-eb-garamond)] text-base italic text-[#3d3429]",
-          feedback.kind === "fail" || feedback.kind === "success"
-            ? "alchemy-fade-in"
-            : "",
-        ].join(" ")}
-        role="status"
-        aria-live="polite"
-      >
-        {feedback.kind === "success" && (
-          <span>Discovered: {feedback.name}</span>
-        )}
-        {feedback.kind === "fail" && <span>Nothing happened</span>}
-        {feedback.kind === "win" && !showWinModal && (
-          <span className="not-italic font-medium text-[#1a1510]">
-            You made {feedback.name}!
-          </span>
-        )}
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <Workspace
+            instances={instances}
+            surfaceRef={surfaceRef}
+            busy={busy}
+            disabled={won || showStartModal}
+            inventoryGhost={inventoryGhost}
+            failPulse={failPulse}
+            onMove={handleMove}
+            onCombineInstances={handleCombineInstances}
+          />
+
+          <div
+            className={[
+              "min-h-[1.75rem] text-center font-[family-name:var(--font-eb-garamond)] text-base italic text-[#3d3429]",
+              feedback.kind === "fail" || feedback.kind === "success"
+                ? "alchemy-fade-in"
+                : "",
+            ].join(" ")}
+            role="status"
+            aria-live="polite"
+          >
+            {feedback.kind === "success" && (
+              <span>Discovered: {feedback.name}</span>
+            )}
+            {feedback.kind === "fail" && <span>Nothing happened</span>}
+            {feedback.kind === "win" && !showWinModal && (
+              <span className="not-italic font-medium text-[#1a1510]">
+                You made {feedback.name}!
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       {showStartModal && (
@@ -419,10 +476,10 @@ export function Game() {
             {eraPlaceDisplay}
           </p>
           <p className="mt-3 font-[family-name:var(--font-eb-garamond)] text-base leading-relaxed text-[#2a241c]">
-            {scenario}
+            {puzzle.scenario}
           </p>
           <p className="mt-4 font-[family-name:var(--font-eb-garamond)] text-xl text-[#1a1510]">
-            Can you create <em className="italic">{targetLabel}</em>?
+            Can you create <em className="italic">{puzzle.targetLabel}</em>?
           </p>
           <button
             type="button"
@@ -449,23 +506,36 @@ export function Game() {
             </span>
           </p>
           <p className="mt-5 font-[family-name:var(--font-eb-garamond)] text-lg italic leading-relaxed text-[#2a241c]">
-            {history}
+            {puzzle.history}
           </p>
-          <button
-            type="button"
-            onClick={dismissWinModal}
-            className="mt-5 font-[family-name:var(--font-eb-garamond)] text-sm tracking-wide text-[#1a1510] underline decoration-[#1a1510]/35 underline-offset-4 transition hover:decoration-[#1a1510]/70"
-          >
-            Continue
-          </button>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            {hasNext ? (
+              <button
+                type="button"
+                onClick={goToNextPuzzle}
+                className="font-[family-name:var(--font-eb-garamond)] text-sm tracking-wide text-[#1a1510] underline decoration-[#1a1510]/35 underline-offset-4 transition hover:decoration-[#1a1510]/70"
+              >
+                Next invention
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => goToPuzzle(0)}
+                className="font-[family-name:var(--font-eb-garamond)] text-sm tracking-wide text-[#1a1510] underline decoration-[#1a1510]/35 underline-offset-4 transition hover:decoration-[#1a1510]/70"
+              >
+                Start over
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={dismissWinModal}
+              className="font-[family-name:var(--font-eb-garamond)] text-sm tracking-wide text-[#5c5348] underline decoration-[#5c5348]/35 underline-offset-4 transition hover:decoration-[#5c5348]/70"
+            >
+              Stay here
+            </button>
+          </div>
         </AlchemyModal>
       )}
-
-      <Inventory
-        ids={inventory}
-        onPointerDragStart={handleInventoryPointerDown}
-        disabled={locked}
-      />
     </div>
   );
 }

@@ -1,14 +1,4 @@
-export type ItemId =
-  | "milk"
-  | "lemon"
-  | "tree"
-  | "fire"
-  | "axe"
-  | "curd"
-  | "wood"
-  | "heat"
-  | "plastic"
-  | "warm-milk";
+export type ItemId = string;
 
 export type Item = {
   id: ItemId;
@@ -22,4 +12,18 @@ export type Item = {
 export type Recipe = {
   inputs: [ItemId, ItemId];
   result: ItemId;
+};
+
+/** One Little Alchemy–style invention puzzle */
+export type Puzzle = {
+  id: string;
+  targetId: ItemId;
+  /** Short name shown in “Can you create …?” */
+  targetLabel: string;
+  /** e.g. "1897 Munich, Germany" */
+  eraPlace: string;
+  scenario: string;
+  history: string;
+  startIds: ItemId[];
+  recipes: Recipe[];
 };

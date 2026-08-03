@@ -1,8 +1,11 @@
-import { recipes } from "./casein";
-import type { ItemId } from "./types";
+import type { ItemId, Recipe } from "./types";
 
 /** Order-independent recipe match. Returns the result id or null. */
-export function combine(a: ItemId, b: ItemId): ItemId | null {
+export function combine(
+  a: ItemId,
+  b: ItemId,
+  recipes: Recipe[],
+): ItemId | null {
   if (a === b) return null;
 
   const pair = new Set([a, b]);
