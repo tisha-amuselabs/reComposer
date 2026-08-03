@@ -89,7 +89,7 @@ export function Round1({
       <section className="materia-panel flex flex-col rounded-xl p-5 sm:p-7">
         <p className="materia-label">Stage 01 // Composition</p>
 
-        <div className="relative my-7 min-h-[21rem] rounded-lg border border-[#94a3b8]/8 bg-[#060e20]/24 px-2 py-5 sm:min-h-[24rem]">
+        <div className="relative my-7 min-h-84 rounded-lg border border-[#94a3b8]/8 bg-[#060e20]/24 px-2 py-5 sm:min-h-96">
           <div className="absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 sm:h-64 sm:w-64">
             <div
               className="materia-donut h-full w-full"

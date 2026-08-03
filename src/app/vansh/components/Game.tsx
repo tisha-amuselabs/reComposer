@@ -1,7 +1,10 @@
 "use client";
 
 import { useDailyGame } from "../lib/useDailyGame";
+import { isDemoMode } from "../lib/demo";
+import { ITEMS } from "../data/items";
 import { ProgressDots } from "./ProgressDots";
+import { DemoBar } from "./DemoBar";
 import { Round1 } from "./round1/Round1";
 import { AlchemyStation } from "./alchemy/AlchemyStation";
 import { Round3 } from "./round3/Round3";
@@ -33,7 +36,7 @@ export function Game() {
     <div className="materia">
       <div className="relative z-10 min-h-screen">
         <header className="border-b border-[#94a3b8]/15 bg-[#0b1326]/90 backdrop-blur-xl">
-          <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-5 px-4 sm:px-8 lg:px-16">
+          <div className="mx-auto flex h-16 max-w-360 items-center justify-between gap-5 px-4 sm:px-8 lg:px-16">
             <div className="flex items-center gap-3">
               <span className="grid h-8 w-8 place-items-center rounded-sm border border-[#7bd0ff]/35 bg-[#7bd0ff]/10 font-mono text-sm font-bold text-[#7bd0ff]">
                 M
@@ -48,7 +51,9 @@ export function Game() {
           </div>
         </header>
 
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col px-4 pb-16 pt-10 sm:px-8 lg:px-16 lg:pt-14">
+        <div className="mx-auto flex w-full max-w-360 flex-col px-4 pb-16 pt-10 sm:px-8 lg:px-16 lg:pt-14">
+          {isDemoMode() && <DemoBar items={ITEMS} currentId={item.id} />}
+
           {showItemHeader && (
             <div className="mb-8 flex flex-col justify-between gap-5 lg:mb-10 lg:flex-row lg:items-end">
               <div className="max-w-4xl">

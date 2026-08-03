@@ -270,6 +270,8 @@ export function AlchemyStation({
   }
 
   const discoveredIds = new Set(inventory.filter((id) => !recipe.startIds.includes(id)));
+  const materialIds = inventory.filter((id) => recipe.nodes[id]?.type !== "action");
+  const actionIds = inventory.filter((id) => recipe.nodes[id]?.type === "action");
 
   return (
     <div>
@@ -286,21 +288,17 @@ export function AlchemyStation({
         </span>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[23rem_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)_17rem]">
         <aside className="materia-panel rounded-xl p-5 sm:p-6">
           <p className="materia-label text-[#8e9ab1]">Input inventory</p>
-          <h3 className="mb-4 mt-3 text-xl font-semibold text-[#dae2fd]">Materials &amp; actions</h3>
+          <h3 className="mb-4 mt-3 text-xl font-semibold text-[#dae2fd]">Materials</h3>
           <Inventory
             nodes={recipe.nodes}
-            ids={inventory}
+            ids={materialIds}
             discoveredIds={discoveredIds}
             onPointerDragStart={handleInventoryPointerDown}
             disabled={busy || won}
           />
-
-          <div className="mt-5">
-            <HintPanel onRequestHint={() => requestHint(item.id, "round2", { inventory })} />
-          </div>
         </aside>
 
         <section className="materia-panel flex flex-col rounded-xl p-5 sm:p-7">
@@ -326,7 +324,7 @@ export function AlchemyStation({
           />
 
           <div
-            className="mt-4 min-h-[1.5rem] text-center font-mono text-xs uppercase tracking-wider"
+            className="mt-4 min-h-6 text-center font-mono text-xs uppercase tracking-wider"
             role="status"
             aria-live="polite"
           >
@@ -334,6 +332,10 @@ export function AlchemyStation({
               <span className="text-[#2dd4bf]">Synthesized: {feedback.name}</span>
             )}
             {feedback.kind === "fail" && <span className="text-[#ffb4ab]">Nothing happened</span>}
+          </div>
+
+          <div className="mt-4">
+            <HintPanel onRequestHint={() => requestHint(item.id, "round2", { inventory })} />
           </div>
 
           <div className="mt-4 flex items-center justify-end border-t border-[#94a3b8]/10 pt-6">
@@ -346,6 +348,18 @@ export function AlchemyStation({
             </button>
           </div>
         </section>
+
+        <aside className="materia-panel rounded-xl p-5 sm:p-6">
+          <p className="materia-label text-[#8e9ab1]">Reactor controls</p>
+          <h3 className="mb-4 mt-3 text-xl font-semibold text-[#dae2fd]">Actions</h3>
+          <Inventory
+            nodes={recipe.nodes}
+            ids={actionIds}
+            discoveredIds={discoveredIds}
+            onPointerDragStart={handleInventoryPointerDown}
+            disabled={busy || won}
+          />
+        </aside>
       </div>
     </div>
   );

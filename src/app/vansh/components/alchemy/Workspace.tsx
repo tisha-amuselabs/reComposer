@@ -112,7 +112,7 @@ function TileFace({
           </button>
         )}
       </span>
-      <span className="max-w-[5rem] truncate text-center font-mono text-[10px] text-[#c4c6cd]">
+      <span className="max-w-20 truncate text-center font-mono text-[10px] text-[#c4c6cd]">
         {node.label}
       </span>
     </div>

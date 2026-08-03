@@ -35,7 +35,7 @@ export function Inventory({
                         onPointerDragStart(id, e.pointerId, e.clientX, e.clientY);
                       }
                 }
-                className={`flex min-h-[5.5rem] w-full touch-none flex-col items-center justify-center gap-2 rounded-sm border p-4 transition-all ${
+                className={`flex min-h-22 w-full touch-none flex-col items-center justify-center gap-2 rounded-sm border p-4 transition-all ${
                   isDiscovered
                     ? "border-[#2dd4bf]/40 bg-[#2dd4bf]/5"
                     : "border-[#94a3b8]/15 bg-[#171f33]"

@@ -6,8 +6,12 @@ import type { ItemOfDay } from "../types/item";
 import { getLocalDateKey, itemForDate } from "./date";
 import { readStorage, writeStorage } from "./storage";
 import { haversineKm } from "./haversine";
+import { getDemoItemId } from "./demo";
+import { itemById } from "../data/items";
 import { computeRound1Feedback } from "../components/round1/round1.logic";
 import { totalSteps } from "../components/alchemy/alchemy.logic";
+
+const DEMO_KEY_PREFIX = "demo:";
 
 const SCHEMA_VERSION = 1;
 
@@ -58,6 +62,15 @@ interface GameSnapshot {
 // safe to read Date/localStorage during the lazy initializer rather than an
 // effect — avoids an extra render pass and a setState-in-effect lint error.
 function loadInitialSnapshot(): GameSnapshot {
+  const demoItemId = getDemoItemId();
+  if (demoItemId) {
+    const demoItem = itemById(demoItemId);
+    return {
+      item: demoItem,
+      state: createInitialState(demoItem, `${DEMO_KEY_PREFIX}${demoItem.id}`),
+    };
+  }
+
   const today = new Date();
   const dateKey = getLocalDateKey(today);
   const todaysItem = itemForDate(today);
@@ -93,7 +106,12 @@ export function useDailyGame() {
 
   const persist = useCallback((next: DailyGameState) => {
     setSnapshot((snapshot) => ({ ...snapshot, state: next }));
-    writeStorage(storageKey(next.dateKey), next);
+    // Demo sessions (see lib/demo.ts) are ephemeral by design — never touch
+    // localStorage, so they can't collide with or get blocked by real
+    // daily progress.
+    if (!next.dateKey.startsWith(DEMO_KEY_PREFIX)) {
+      writeStorage(storageKey(next.dateKey), next);
+    }
   }, []);
 
   const advancePhase = useCallback(() => {

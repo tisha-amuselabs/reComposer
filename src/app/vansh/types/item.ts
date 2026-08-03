@@ -16,6 +16,11 @@ export interface AlchemyNode {
   id: string;
   label: string;
   emoji: string;
+  // "material" covers raw ingredients AND every combination result (including
+  // the final target) — "action" is only the small set of reusable tool
+  // verbs (heat, stir, ...). Drives which of the two inventory panels a node
+  // appears in.
+  type: "material" | "action";
 }
 
 export interface AlchemyCombination {

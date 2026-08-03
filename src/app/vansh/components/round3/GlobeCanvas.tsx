@@ -139,7 +139,7 @@ export function GlobeCanvas({
       : [];
 
   return (
-    <div ref={containerRef} className="relative h-full min-h-[360px] w-full overflow-hidden">
+    <div ref={containerRef} className="relative h-full min-h-90 w-full overflow-hidden">
       <Globe
         ref={globeRef}
         width={size.width}

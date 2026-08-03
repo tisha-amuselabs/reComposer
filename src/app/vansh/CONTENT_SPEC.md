@@ -41,6 +41,11 @@ interface AlchemyNode {
   id: string; // kebab-case, unique within this item's alchemy graph
   label: string; // display name, e.g. "Oxidizer blend"
   emoji: string; // one emoji, decorative tile icon
+  // "material" = raw ingredients AND every combination result, including the
+  // final target. "action" = only the reusable tool verbs (see
+  // AlchemyActionId above). Drives which of the two inventory panels
+  // (Materials on the left, Actions on the right) a node appears in.
+  type: "material" | "action";
 }
 
 interface AlchemyCombination {
@@ -113,8 +118,8 @@ export const ___EXPORT_NAME___: ItemOfDay = {
   ],
   alchemy: {
     nodes: {
-      "___node-id___": { id: "___node-id___", label: "___Label___", emoji: "___" },
-      // ...one entry for every id referenced in startIds/combinations below
+      "___node-id___": { id: "___node-id___", label: "___Label___", emoji: "___", type: "material" },
+      // ...one entry for every id referenced in startIds/combinations below, each with type: "material" | "action"
     },
     startIds: ["___", "___", "___", "___", "___"],
     combinations: [
@@ -168,6 +173,11 @@ export const ___EXPORT_NAME___: ItemOfDay = {
     short enough to stay solvable without a hint.
   - Every node you reference (in `startIds`, `inputs`, or `result`) must have
     a matching entry in `nodes`, and vice versa — no orphans either way.
+  - Set every node's `type` correctly: `"action"` for the tool-verb nodes
+    only, `"material"` for everything else (raw materials AND every
+    combination result, including the final target). This is what splits the
+    game's Materials panel from its Actions panel, so a wrong `type` puts a
+    node in the wrong column.
 - **origin**: pick one specific, mainstream-documented "first invented/made"
   year + place for this exact version of the item. If the date is disputed
   or fuzzy, still commit to one answer for scoring, and put the nuance in
@@ -231,19 +241,19 @@ export const MATCHSTICK_TIP: ItemOfDay = {
   ],
   alchemy: {
     nodes: {
-      wood: { id: "wood", label: "Wood (splint)", emoji: "🪵" },
-      "potassium-chlorate": { id: "potassium-chlorate", label: "Potassium chlorate", emoji: "🧂" },
-      "antimony-trisulfide": { id: "antimony-trisulfide", label: "Antimony trisulfide", emoji: "🪨" },
-      sulfur: { id: "sulfur", label: "Sulfur", emoji: "🟡" },
-      binder: { id: "binder", label: "Starch / gum binder", emoji: "🧴" },
-      stir: { id: "stir", label: "Stir", emoji: "🌀" },
-      heat: { id: "heat", label: "Heat", emoji: "🔥" },
-      "oxidizer-blend": { id: "oxidizer-blend", label: "Oxidizer blend", emoji: "⚗️" },
-      "raw-paste": { id: "raw-paste", label: "Raw paste", emoji: "🥣" },
-      "bound-paste": { id: "bound-paste", label: "Bound paste", emoji: "🧪" },
-      "chemical-paste": { id: "chemical-paste", label: "Chemical paste", emoji: "🧫" },
-      "dipped-splint": { id: "dipped-splint", label: "Dipped splint", emoji: "🖊️" },
-      "matchstick-tip": { id: "matchstick-tip", label: "Matchstick tip", emoji: "🔥" },
+      wood: { id: "wood", label: "Wood (splint)", emoji: "🪵", type: "material" },
+      "potassium-chlorate": { id: "potassium-chlorate", label: "Potassium chlorate", emoji: "🧂", type: "material" },
+      "antimony-trisulfide": { id: "antimony-trisulfide", label: "Antimony trisulfide", emoji: "🪨", type: "material" },
+      sulfur: { id: "sulfur", label: "Sulfur", emoji: "🟡", type: "material" },
+      binder: { id: "binder", label: "Starch / gum binder", emoji: "🧴", type: "material" },
+      stir: { id: "stir", label: "Stir", emoji: "🌀", type: "action" },
+      heat: { id: "heat", label: "Heat", emoji: "🔥", type: "action" },
+      "oxidizer-blend": { id: "oxidizer-blend", label: "Oxidizer blend", emoji: "⚗️", type: "material" },
+      "raw-paste": { id: "raw-paste", label: "Raw paste", emoji: "🥣", type: "material" },
+      "bound-paste": { id: "bound-paste", label: "Bound paste", emoji: "🧪", type: "material" },
+      "chemical-paste": { id: "chemical-paste", label: "Chemical paste", emoji: "🧫", type: "material" },
+      "dipped-splint": { id: "dipped-splint", label: "Dipped splint", emoji: "🖊️", type: "material" },
+      "matchstick-tip": { id: "matchstick-tip", label: "Matchstick tip", emoji: "🔥", type: "material" },
     },
     startIds: ["wood", "potassium-chlorate", "antimony-trisulfide", "sulfur", "binder", "stir", "heat"],
     combinations: [
