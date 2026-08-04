@@ -25,7 +25,10 @@ export function ItemTile({
 }: ItemTileProps) {
   const item = items[id];
   const [showImg, setShowImg] = useState(true);
-  const dim = size === "sm" ? "h-14 w-14" : "h-20 w-20";
+  const dim =
+    size === "sm"
+      ? "h-[4.5rem] w-[4.5rem]"
+      : "h-[5.5rem] w-[5.5rem] sm:h-24 sm:w-24";
   const interactive = Boolean(onClick || onPointerDown);
 
   return (
@@ -35,7 +38,7 @@ export function ItemTile({
       onPointerDown={onPointerDown}
       disabled={!interactive}
       className={[
-        "group flex flex-col items-center gap-1.5 transition touch-none",
+        "group flex w-full flex-col items-center gap-1.5 transition touch-none",
         interactive ? "cursor-grab active:cursor-grabbing" : "cursor-default",
         muted ? "opacity-50" : "",
         className,
@@ -46,14 +49,14 @@ export function ItemTile({
       <span
         className={[
           dim,
-          "relative flex items-center justify-center overflow-hidden rounded-sm border transition",
+          "relative flex shrink-0 items-center justify-center overflow-hidden rounded-sm border transition",
           selected
             ? "border-[#1a1510] ring-2 ring-[#1a1510]/30"
             : "border-[#1a1510]/25 group-hover:border-[#1a1510]/55",
         ].join(" ")}
         style={{ backgroundColor: item.color }}
       >
-        <span className="px-1 text-center font-[family-name:var(--font-eb-garamond)] text-[10px] font-medium uppercase tracking-wide text-[#1a1510]/70">
+        <span className="px-1 text-center font-[family-name:var(--font-eb-garamond)] text-xs font-medium uppercase tracking-wide text-[#1a1510]/70">
           {item.name.split(" ")[0]}
         </span>
         {showImg && (
@@ -67,7 +70,7 @@ export function ItemTile({
           />
         )}
       </span>
-      <span className="max-w-[5.5rem] text-center font-[family-name:var(--font-eb-garamond)] text-xs leading-tight text-[#2a241c] sm:text-sm">
+      <span className="line-clamp-2 w-full text-center font-[family-name:var(--font-eb-garamond)] text-sm leading-tight text-[#2a241c]">
         {item.name}
       </span>
     </button>

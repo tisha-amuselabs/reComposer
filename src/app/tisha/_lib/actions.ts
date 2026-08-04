@@ -1,6 +1,6 @@
 import type { Action, ActionId } from "./types";
 
-/** Shared lab operations — materials live in items.ts */
+/** Shared lab operations. Materials live in items.ts. */
 export const actions: Record<ActionId, Action> = {
   mix: {
     id: "mix",
@@ -23,6 +23,13 @@ export const actions: Record<ActionId, Action> = {
     arity: 1,
     blurb: "Feed something to the flame.",
   },
+  energy: {
+    id: "energy",
+    name: "Energy",
+    kind: "transform",
+    arity: 1,
+    blurb: "Spend energy to kindle a burn. Wood wants this.",
+  },
   heat: {
     id: "heat",
     name: "Heat",
@@ -43,6 +50,27 @@ export const actions: Record<ActionId, Action> = {
     kind: "breakdown",
     arity: 1,
     blurb: "Separate a material into parts.",
+  },
+  sieve: {
+    id: "sieve",
+    name: "Sieve",
+    kind: "breakdown",
+    arity: 1,
+    blurb: "Strain solids from liquid.",
+  },
+  dry: {
+    id: "dry",
+    name: "Dry",
+    kind: "transform",
+    arity: 1,
+    blurb: "Drive off moisture with air or warmth.",
+  },
+  mould: {
+    id: "mould",
+    name: "Mould",
+    kind: "transform",
+    arity: 1,
+    blurb: "Press into a lasting shape.",
   },
   melt: {
     id: "melt",

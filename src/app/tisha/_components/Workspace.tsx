@@ -41,6 +41,8 @@ type WorkspaceProps = {
   onMove: (instanceId: string, x: number, y: number) => void;
   onToggleSelect: (instanceId: string) => void;
   onClearSelection: () => void;
+  onClearProcess?: () => void;
+  clearDisabled?: boolean;
 };
 
 export function clientToCanvasLocal(
@@ -103,7 +105,7 @@ function TileFace({
           backgroundColor: item.color,
         }}
       >
-        <span className="px-1 text-center font-[family-name:var(--font-eb-garamond)] text-[10px] font-medium uppercase tracking-wide text-[#1a1510]/70">
+        <span className="px-1 text-center font-[family-name:var(--font-eb-garamond)] text-xs font-medium uppercase tracking-wide text-[#1a1510]/70">
           {item.name.split(" ")[0]}
         </span>
         {showImg && (
@@ -117,7 +119,7 @@ function TileFace({
           />
         )}
       </span>
-      <span className="max-w-[4.5rem] truncate text-center font-[family-name:var(--font-eb-garamond)] text-[11px] leading-tight text-[#2a241c]">
+      <span className="max-w-[5.5rem] text-center font-[family-name:var(--font-eb-garamond)] text-sm leading-snug text-[#2a241c]">
         {item.name}
       </span>
     </div>
@@ -145,6 +147,8 @@ export function Workspace({
   onMove,
   onToggleSelect,
   onClearSelection,
+  onClearProcess,
+  clearDisabled = false,
 }: WorkspaceProps) {
   const dragRef = useRef<CanvasDrag | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -221,21 +225,36 @@ export function Workspace({
   };
 
   return (
-    <section aria-label="Workspace" className="flex w-full flex-col gap-3">
-      <h2 className="border-b border-[#1a1510]/20 pb-2 text-center font-[family-name:var(--font-eb-garamond)] text-xs font-semibold uppercase tracking-[0.2em] text-[#5c5348]">
-        Workspace
-      </h2>
+    <section
+      aria-label="Workspace"
+      className="flex w-full shrink-0 flex-col gap-2"
+    >
+      <div className="flex shrink-0 items-baseline justify-between gap-3 border-b border-[#1a1510]/20 pb-2">
+        <h2 className="font-[family-name:var(--font-eb-garamond)] text-sm font-semibold uppercase tracking-[0.18em] text-[#5c5348]">
+          Workspace
+        </h2>
+        {onClearProcess && (
+          <button
+            type="button"
+            disabled={clearDisabled}
+            onClick={onClearProcess}
+            className="font-[family-name:var(--font-eb-garamond)] text-sm tracking-wide text-[#1a1510] underline decoration-[#1a1510]/35 underline-offset-4 transition hover:decoration-[#1a1510]/70 disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
+          >
+            Clear process
+          </button>
+        )}
+      </div>
       <div
         ref={surfaceRef}
         className={[
-          "alchemy-workspace relative h-[min(52vh,28rem)] w-full overflow-hidden rounded-sm border border-[#1a1510]/20 touch-none",
+          "alchemy-workspace relative h-[17.5rem] w-full overflow-hidden rounded-sm border border-[#1a1510]/20 touch-none sm:h-[18.5rem] lg:h-[20rem]",
           failPulse ? "alchemy-shake" : "",
         ].join(" ")}
         onPointerDown={() => {
           if (!disabled && !busy) onClearSelection();
         }}
       >
-        <p className="pointer-events-none absolute inset-x-0 top-3 text-center font-[family-name:var(--font-eb-garamond)] text-sm italic text-[#1a1510]/30">
+        <p className="pointer-events-none absolute inset-x-0 top-3 text-center font-[family-name:var(--font-eb-garamond)] text-base italic text-[#1a1510]/35">
           Select materials, then use an action
         </p>
 

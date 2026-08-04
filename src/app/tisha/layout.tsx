@@ -9,9 +9,9 @@ const ebGaramond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Reinventing the Wheel — reComposer",
+  title: "Reinventing the Wheel · reComposer",
   description:
-    "A materials-and-actions lab for rediscovering everyday inventions—with breakdowns and process hints.",
+    "A materials-and-actions lab for rediscovering everyday inventions, with breakdowns and process hints.",
 };
 
 export default function TishaLayout({
@@ -21,7 +21,7 @@ export default function TishaLayout({
 }>) {
   return (
     <div
-      className={`${ebGaramond.variable} alchemy-page min-h-full flex-1`}
+      className={`${ebGaramond.variable} alchemy-page flex h-dvh min-h-0 flex-1 flex-col overflow-hidden`}
       style={{
         color: "#1a1510",
         fontFamily: "var(--font-eb-garamond), Georgia, serif",

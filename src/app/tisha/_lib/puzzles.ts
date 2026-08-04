@@ -8,23 +8,84 @@ export const puzzles: Puzzle[] = [
   {
     id: "casein-plastic",
     targetId: "plastic",
-    targetLabel: "Plastic",
+    targetLabel: "Bioplastic",
     eraPlace: "1897 Munich, Germany",
     scenario:
-      "Munich, 1897. Chemists chase a plastic from the commonplace—milk, citrus, timber. Select materials on the bench, then apply lab actions from the right.",
+      "Munich, 1897. Chemists are after a plastic made from milk and lemon, not exotic resins. Side experiments get weird.",
     history:
-      "Later, this milk-based plastic—known as Galalith—was carved into buttons as an affordable stand-in for ivory.",
+      "In 1897, Wilhelm Krische and Adolf Spitteler patented Galalith, a hard plastic made from milk casein. Factories moulded it into buttons, beads, and piano keys as a cheap substitute for ivory and horn.",
     startIds: ["milk", "lemon", "tree"],
-    actionIds: ["mix", "chop", "burn", "heat", "break"],
+    actionIds: ["mix", "chop", "energy", "burn", "break", "sieve", "dry", "mould"],
     recipes: [
+      // — Correct path —
       { action: "mix", inputs: ["milk", "lemon"], results: ["curd"] },
+      { action: "sieve", inputs: ["curd"], results: ["protein", "whey"] },
+      { action: "dry", inputs: ["protein"], results: ["dried-protein"] },
+      { action: "mould", inputs: ["dried-protein"], results: ["plastic"] },
+
+      // — Tree → fire (Energy, not a free Heat action) —
       { action: "chop", inputs: ["tree"], results: ["wood"] },
-      { action: "burn", inputs: ["wood"], results: ["heat"] },
-      { action: "heat", inputs: ["curd"], results: ["plastic"] },
-      { action: "heat", inputs: ["milk"], results: ["warm-milk"] },
-      { action: "break", inputs: ["curd"], results: ["whey", "solids"] },
-      { action: "heat", inputs: ["solids"], results: ["plastic"] },
+      { action: "energy", inputs: ["wood"], results: ["fire"] },
       { action: "break", inputs: ["wood"], results: ["chips"] },
+      { action: "break", inputs: ["curd"], results: ["whey", "solids"] },
+      { action: "sieve", inputs: ["solids"], results: ["protein"] },
+      { action: "dry", inputs: ["solids"], results: ["dried-protein"] },
+
+      // — Funny / throw-off paths —
+      { action: "burn", inputs: ["wood"], results: ["charcoal"] },
+      { action: "burn", inputs: ["tree"], results: ["charcoal", "smoke"] },
+      { action: "mix", inputs: ["milk", "fire"], results: ["warm-milk"] },
+      { action: "mix", inputs: ["warm-milk", "fire"], results: ["burnt-milk"] },
+      { action: "burn", inputs: ["milk"], results: ["burnt-milk"] },
+      { action: "burn", inputs: ["warm-milk"], results: ["burnt-milk", "smoke"] },
+      { action: "mix", inputs: ["milk", "wood"], results: ["soggy-wood"] },
+      { action: "mix", inputs: ["lemon", "wood"], results: ["citrus-chips"] },
+      { action: "mix", inputs: ["curd", "wood"], results: ["curd-toast"] },
+      { action: "mix", inputs: ["protein", "wood"], results: ["curd-toast"] },
+      { action: "mix", inputs: ["curd", "fire"], results: ["cheese-candle"] },
+      { action: "burn", inputs: ["lemon"], results: ["lemon-ash"] },
+      { action: "mix", inputs: ["lemon", "fire"], results: ["lemon-ash"] },
+      { action: "mix", inputs: ["whey", "wood"], results: ["soggy-wood"] },
+      { action: "mix", inputs: ["whey", "lemon"], results: ["regret"] },
+      { action: "mix", inputs: ["burnt-milk", "lemon"], results: ["regret"] },
+      { action: "mix", inputs: ["milk", "tree"], results: ["forest-milk"] },
+      { action: "mix", inputs: ["lemon", "tree"], results: ["sour-sawdust"] },
+      { action: "mix", inputs: ["curd", "lemon"], results: ["double-curdle"] },
+      { action: "mix", inputs: ["warm-milk", "wood"], results: ["milkshake-splinter"] },
+      { action: "mix", inputs: ["warm-milk", "chips"], results: ["milkshake-splinter"] },
+      { action: "mix", inputs: ["protein", "fire"], results: ["scorched-protein"] },
+      { action: "mix", inputs: ["dried-protein", "fire"], results: ["scorched-protein"] },
+      { action: "mix", inputs: ["whey", "fire"], results: ["whey-tea"] },
+      { action: "mix", inputs: ["charcoal", "milk"], results: ["ash-milk"] },
+      { action: "mix", inputs: ["charcoal", "lemon"], results: ["regret"] },
+      { action: "mix", inputs: ["protein", "lemon"], results: ["sticky-mess"] },
+      { action: "mix", inputs: ["dried-protein", "lemon"], results: ["sticky-mess"] },
+      { action: "mix", inputs: ["dried-protein", "whey"], results: ["sticky-mess"] },
+      { action: "mix", inputs: ["chips", "lemon"], results: ["sour-sawdust"] },
+      { action: "mix", inputs: ["chips", "fire"], results: ["charcoal"] },
+      { action: "mix", inputs: ["forest-milk", "lemon"], results: ["double-curdle"] },
+      { action: "chop", inputs: ["lemon"], results: ["citrus-chips"] },
+      { action: "chop", inputs: ["milk"], results: ["regret"] },
+      { action: "burn", inputs: ["curd"], results: ["cheese-candle"] },
+      { action: "burn", inputs: ["protein"], results: ["scorched-protein"] },
+      { action: "dry", inputs: ["lemon"], results: ["lemon-ash"] },
+      { action: "sieve", inputs: ["lemon"], results: ["regret"] },
+      { action: "mould", inputs: ["warm-milk"], results: ["regret"] },
+      { action: "mould", inputs: ["whey"], results: ["regret"] },
+      { action: "break", inputs: ["fire"], results: ["smoke"] },
+      { action: "break", inputs: ["burnt-milk"], results: ["smoke", "regret"] },
+      { action: "break", inputs: ["soggy-wood"], results: ["milk", "wood"] },
+      { action: "break", inputs: ["citrus-chips"], results: ["lemon", "chips"] },
+      { action: "break", inputs: ["curd-toast"], results: ["curd", "chips"] },
+      { action: "break", inputs: ["forest-milk"], results: ["milk", "chips"] },
+      { action: "break", inputs: ["cheese-candle"], results: ["curd", "smoke"] },
+      { action: "break", inputs: ["charcoal"], results: ["chips", "smoke"] },
+      { action: "break", inputs: ["sticky-mess"], results: ["protein", "lemon"] },
+      { action: "mould", inputs: ["curd"], results: ["curd"] },
+      { action: "dry", inputs: ["milk"], results: ["warm-milk"] },
+      { action: "sieve", inputs: ["milk"], results: ["milk"] },
+      { action: "mould", inputs: ["wood"], results: ["chips"] },
+      { action: "dry", inputs: ["whey"], results: ["regret"] },
     ],
     hints: [
       {
@@ -37,25 +98,40 @@ export const puzzles: Puzzle[] = [
         id: "cp-2",
         level: 1,
         whenHas: ["curd"],
-        whenMissing: ["heat", "plastic"],
-        text: "Curds on a cold bench stay soft. The hearth has more to teach.",
+        whenMissing: ["protein", "plastic"],
+        text: "Curds are wet and mixed. Use Sieve to strain them and free the protein.",
       },
       {
         id: "cp-3",
         level: 2,
-        whenMissing: ["wood", "heat"],
-        text: "Heat need not arrive as a finished tool—burn what you can chop from the tree.",
+        whenHas: ["protein"],
+        whenMissing: ["dried-protein", "plastic"],
+        text: "Coagulated protein still holds water. Dry it before you shape it.",
       },
       {
         id: "cp-4",
         level: 2,
-        whenHas: ["curd", "heat"],
-        text: "You hold curds and warmth. Apply Heat to the curdled milk.",
+        whenHas: ["dried-protein"],
+        whenMissing: ["plastic"],
+        text: "Dry protein wants a form. Mould it into bioplastic.",
       },
       {
         id: "cp-5",
+        level: 2,
+        whenHas: ["warm-milk"],
+        text: "Warm milk is a detour. More fire may scorch it, unless you meant to make breakfast disasters.",
+      },
+      {
+        id: "cp-5b",
+        level: 1,
+        whenHas: ["tree"],
+        whenMissing: ["fire", "plastic"],
+        text: "No free Heat on this bench. Chop the tree, then spend Energy on the wood if you want Fire.",
+      },
+      {
+        id: "cp-6",
         level: 3,
-        text: "Mix milk with lemon → Chop the tree → Burn the wood → Heat the curds (or Break curds, then Heat the solids).",
+        text: "Mix milk + lemon → Sieve the curd → Dry the protein → Mould into bioplastic.",
       },
     ],
   },
@@ -65,9 +141,9 @@ export const puzzles: Puzzle[] = [
     targetLabel: "Rubber",
     eraPlace: "1839 Woburn, Massachusetts",
     scenario:
-      "Woburn, 1839. Soft latex melts in summer and cracks in winter. Sulfur waits on the bench. Operations—not luck—will remake the gum.",
+      "Woburn, 1839. Soft latex melts in summer and cracks in winter. Sulfur waits on the bench. The right operations, not luck, will remake the gum.",
     history:
-      "Charles Goodyear’s accident—sulfur, latex, and heat—gave the world vulcanized rubber: tires, boots, and the industrial age’s bounce.",
+      "In 1839, Charles Goodyear found that heating natural latex with sulfur produces vulcanized rubber. The material stays flexible in heat and cold, which made tires, boots, and industrial seals practical.",
     startIds: ["latex", "sulfur"],
     actionIds: ["mix", "heat", "break"],
     recipes: [
@@ -86,7 +162,7 @@ export const puzzles: Puzzle[] = [
         id: "vr-2",
         level: 2,
         whenHas: ["sticky-mix"],
-        text: "The sticky blend still fears summer heat—unless you Heat it on purpose.",
+        text: "The sticky blend still fears summer heat, unless you Heat it on purpose.",
       },
       {
         id: "vr-3",
@@ -101,9 +177,9 @@ export const puzzles: Puzzle[] = [
     targetLabel: "Paper",
     eraPlace: "105 Luoyang, China",
     scenario:
-      "Luoyang, 105 CE. Wood and water wait. Chop, break apart, mix, and press—the empire needs a lighter page.",
+      "Luoyang, 105 CE. Wood and water wait. Chop, break apart, mix, and press. The empire needs a lighter page.",
     history:
-      "Cai Lun’s method—fiber pulp pressed into sheets—spread along the Silk Road and remade how knowledge travelled.",
+      "Around 105 CE, Cai Lun improved paper by pressing plant-fiber pulp into sheets. The method spread along the Silk Road and replaced heavier writing surfaces such as bamboo slips and silk.",
     startIds: ["tree", "water"],
     actionIds: ["chop", "break", "mix", "press"],
     recipes: [
@@ -148,7 +224,7 @@ export const puzzles: Puzzle[] = [
     scenario:
       "Mesopotamia, deep antiquity. Sand and ash on the bench. Heat and Mix until light catches in the melt.",
     history:
-      "Early glassmakers learned that ash softens sand in the heat, yielding beads, vessels, and eventually windows on the world.",
+      "By about 1500 BCE in Mesopotamia, glassmakers heated sand with plant ash. The ash acts as a flux, lowering the melting point so the mix can form beads, vessels, and later window glass.",
     startIds: ["sand", "ash"],
     actionIds: ["heat", "mix", "break"],
     recipes: [
@@ -163,7 +239,7 @@ export const puzzles: Puzzle[] = [
         id: "gl-1",
         level: 1,
         whenMissing: ["flux", "batch", "glass"],
-        text: "Ash is not decoration—it helps sand yield at a lower heat.",
+        text: "Ash is not decoration. It helps sand melt at a lower heat.",
       },
       {
         id: "gl-2",
@@ -185,9 +261,9 @@ export const puzzles: Puzzle[] = [
     targetLabel: "Soap",
     eraPlace: "2800 BCE Babylon",
     scenario:
-      "Babylon. Fat, ash, and water—kitchen scraps and hearth sweepings. Mix them in the right order.",
+      "Babylon. Fat, ash, and water: kitchen scraps and hearth sweepings. Mix them in the right order.",
     history:
-      "Alkaline ash water (lye) meeting fat yields soap—a chemistry older than most empires, still under every sink.",
+      "Soap forms when fat meets alkaline ash water (lye). Recipes for this reaction appear in Babylonian records from around 2800 BCE, and the same chemistry still underlies modern soapmaking.",
     startIds: ["fat", "ash", "water"],
     actionIds: ["mix", "break"],
     recipes: [
@@ -223,7 +299,7 @@ export const puzzles: Puzzle[] = [
     scenario:
       "Sumer. Soft copper, patient tin, and the melt. One metal alone will not arm an age.",
     history:
-      "Copper plus tin made bronze—harder tools, sharper blades, and an age named for a metal nobody digs from the ground alone.",
+      "Bronze is an alloy of copper and tin. It is harder than pure copper, holds a sharper edge, and gave its name to the Bronze Age because it could not be mined as a single ore.",
     startIds: ["copper", "tin"],
     actionIds: ["melt", "mix", "heat", "break"],
     recipes: [
@@ -260,7 +336,7 @@ export const puzzles: Puzzle[] = [
     scenario:
       "Rome. Limestone, clay, water. Fire the stone, blend a binder, then wet it until it pours.",
     history:
-      "Roman concrete (opus caementicium) bound crushed rock with lime-based cement—harbors and domes that still stand.",
+      "Roman concrete (opus caementicium) mixed lime-based cement with crushed rock and water. The resulting binder set underwater and still holds harbors, aqueducts, and the dome of the Pantheon.",
     startIds: ["limestone", "clay", "water"],
     actionIds: ["heat", "mix", "break"],
     recipes: [
@@ -288,7 +364,7 @@ export const puzzles: Puzzle[] = [
         id: "co-3",
         level: 2,
         whenHas: ["cement"],
-        text: "Cement waits for water—Mix them to pour the stone.",
+        text: "Cement waits for water. Mix them to pour the stone.",
       },
       {
         id: "co-4",

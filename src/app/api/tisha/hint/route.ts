@@ -34,7 +34,7 @@ async function maybePolishWithAi(
           {
             role: "system",
             content:
-              "You are a laconic laboratory notebook from the historical period given. Rewrite the hint in one or two short sentences. Keep the same meaning and difficulty—do not add new steps or spoil beyond what the hint already says. No quotes, no preamble.",
+              "You are a laconic laboratory notebook from the historical period given. Rewrite the hint in one or two short sentences. Keep the same meaning and difficulty. Do not add new steps or spoil beyond what the hint already says. No em dashes. No quotes, no preamble.",
           },
           {
             role: "user",

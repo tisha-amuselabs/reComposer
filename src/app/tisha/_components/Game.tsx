@@ -171,6 +171,31 @@ export function Game() {
     goToPuzzle(nextIndex);
   }, [goToPuzzle, puzzleIndex]);
 
+  const clearProcess = useCallback(() => {
+    if (busyRef.current || showStartModal) return;
+    clearTimers();
+    invDragRef.current = null;
+    ghostRef.current = null;
+    const current = puzzleRef.current;
+    playingRef.current = true;
+    setInventory([...current.startIds]);
+    setInstances([]);
+    setSelectedIds([]);
+    setFeedback({ kind: "idle" });
+    setWon(false);
+    setShowWinModal(false);
+    setBusy(false);
+    setFailPulse(false);
+    setInventoryGhost(null);
+    setHintText(null);
+    setHintLoading(false);
+    setUsedHintIds([]);
+    setHintsExhausted(false);
+    setFinalTimeSec(null);
+    startedAtRef.current = Date.now();
+    setElapsedSec(0);
+  }, [clearTimers, showStartModal]);
+
   const addToInventory = useCallback((id: ItemId) => {
     setInventory((prev) => (prev.includes(id) ? prev : [...prev, id]));
   }, []);
@@ -427,13 +452,13 @@ export function Game() {
       };
       if (data.exhausted || !data.text || !data.hintId) {
         setHintsExhausted(true);
-        setHintText("The notebook has nothing more—trust the bench.");
+        setHintText("The notebook has nothing more. Trust the bench.");
       } else {
         setHintText(data.text);
         setUsedHintIds((prev) => [...prev, data.hintId!]);
       }
     } catch {
-      setHintText("The laboratory is quiet—try again in a moment.");
+      setHintText("The laboratory is quiet. Try again in a moment.");
     } finally {
       setHintLoading(false);
     }
@@ -450,40 +475,40 @@ export function Game() {
   const dismissWinModal = useCallback(() => setShowWinModal(false), []);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
-      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 sm:gap-6">
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col gap-4 overflow-hidden px-4 py-5 sm:gap-5 sm:px-6 sm:py-6">
+      <header className="flex shrink-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-2 sm:gap-6">
         <div className="min-w-0">
-          <p className="mb-1 font-[family-name:var(--font-eb-garamond)] text-[11px] uppercase tracking-[0.2em] text-[#5c5348]">
+          <p className="mb-1 font-[family-name:var(--font-eb-garamond)] text-sm font-semibold uppercase tracking-[0.18em] text-[#3d3429]">
             Reinventing the wheel · {puzzleProgress}
           </p>
-          <h1 className="font-[family-name:var(--font-eb-garamond)] text-xl text-[#1a1510] sm:text-2xl">
+          <h1 className="font-[family-name:var(--font-eb-garamond)] text-2xl leading-snug text-[#1a1510] sm:text-3xl">
             Can you create <em className="italic">{puzzle.targetLabel}</em>?
           </h1>
         </div>
         <div className="flex items-baseline gap-4 sm:gap-6">
           {!showStartModal && (
             <p
-              className="tabular-nums font-[family-name:var(--font-eb-garamond)] text-xl tracking-wide text-[#3d3429]"
+              className="tabular-nums font-[family-name:var(--font-eb-garamond)] text-2xl tracking-wide text-[#3d3429]"
               aria-live="polite"
               aria-label={`Elapsed time ${displayTime}`}
             >
               {displayTime}
             </p>
           )}
-          <p className="font-[family-name:var(--font-eb-garamond)] text-xl tracking-wide text-[#5c5348]">
+          <p className="font-[family-name:var(--font-eb-garamond)] text-2xl tracking-wide text-[#5c5348]">
             {eraPlaceDisplay}
           </p>
         </div>
       </header>
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:gap-6">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto lg:flex-row lg:items-start lg:justify-center lg:gap-5 lg:overflow-hidden">
         <Inventory
           ids={inventory}
           onPointerDragStart={handleInventoryPointerDown}
           disabled={locked}
         />
 
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
+        <div className="flex min-w-0 w-full flex-col gap-3 lg:min-w-0 lg:flex-1 lg:max-w-3xl">
           <Workspace
             instances={instances}
             surfaceRef={surfaceRef}
@@ -495,11 +520,13 @@ export function Game() {
             onMove={handleMove}
             onToggleSelect={handleToggleSelect}
             onClearSelection={handleClearSelection}
+            onClearProcess={clearProcess}
+            clearDisabled={busy || showStartModal}
           />
 
           <div
             className={[
-              "min-h-[1.75rem] text-center font-[family-name:var(--font-eb-garamond)] text-base italic text-[#3d3429]",
+              "min-h-[1.75rem] shrink-0 text-center font-[family-name:var(--font-eb-garamond)] text-lg italic text-[#3d3429]",
               feedback.kind === "fail" || feedback.kind === "success"
                 ? "alchemy-fade-in"
                 : "",
@@ -520,13 +547,15 @@ export function Game() {
             )}
           </div>
 
-          <HintPanel
-            text={hintText}
-            loading={hintLoading}
-            disabled={locked}
-            exhausted={hintsExhausted}
-            onAsk={askHint}
-          />
+          <div className="shrink-0">
+            <HintPanel
+              text={hintText}
+              loading={hintLoading}
+              disabled={locked}
+              exhausted={hintsExhausted}
+              onAsk={askHint}
+            />
+          </div>
         </div>
 
         <ActionsPanel
@@ -541,24 +570,24 @@ export function Game() {
         <AlchemyModal titleId="alchemy-start-title" dismissible={false}>
           <p
             id="alchemy-start-title"
-            className="font-[family-name:var(--font-eb-garamond)] text-[11px] uppercase tracking-[0.24em] text-[#5c5348]"
+            className="font-[family-name:var(--font-eb-garamond)] text-sm uppercase tracking-[0.2em] text-[#5c5348]"
           >
             {eraPlaceDisplay}
           </p>
-          <p className="mt-3 font-[family-name:var(--font-eb-garamond)] text-base leading-relaxed text-[#2a241c]">
+          <p className="mt-3 font-[family-name:var(--font-eb-garamond)] text-lg leading-relaxed text-[#2a241c]">
             {puzzle.scenario}
           </p>
-          <p className="mt-4 font-[family-name:var(--font-eb-garamond)] text-sm italic text-[#5c5348]">
+          <p className="mt-4 font-[family-name:var(--font-eb-garamond)] text-base italic leading-relaxed text-[#5c5348]">
             Place materials from the left. Select them on the bench. Apply
-            actions from the right—including Break apart.
+            actions from the right, including Break apart.
           </p>
-          <p className="mt-4 font-[family-name:var(--font-eb-garamond)] text-xl text-[#1a1510]">
+          <p className="mt-4 font-[family-name:var(--font-eb-garamond)] text-2xl text-[#1a1510]">
             Can you create <em className="italic">{puzzle.targetLabel}</em>?
           </p>
           <button
             type="button"
             onClick={beginPlay}
-            className="mt-6 font-[family-name:var(--font-eb-garamond)] text-sm tracking-wide text-[#1a1510] underline decoration-[#1a1510]/35 underline-offset-4 transition hover:decoration-[#1a1510]/70"
+            className="mt-6 font-[family-name:var(--font-eb-garamond)] text-base tracking-wide text-[#1a1510] underline decoration-[#1a1510]/35 underline-offset-4 transition hover:decoration-[#1a1510]/70"
           >
             Begin
           </button>
@@ -569,17 +598,17 @@ export function Game() {
         <AlchemyModal titleId="alchemy-win-title" onDismiss={dismissWinModal}>
           <p
             id="alchemy-win-title"
-            className="font-[family-name:var(--font-eb-garamond)] text-2xl text-[#1a1510]"
+            className="font-[family-name:var(--font-eb-garamond)] text-3xl text-[#1a1510]"
           >
             You did it!
           </p>
-          <p className="mt-2 font-[family-name:var(--font-eb-garamond)] text-base tracking-wide text-[#5c5348]">
+          <p className="mt-2 font-[family-name:var(--font-eb-garamond)] text-lg tracking-wide text-[#5c5348]">
             Time:{" "}
             <span className="tabular-nums text-[#1a1510]">
               {formatElapsed(finalTimeSec ?? elapsedSec)}
             </span>
           </p>
-          <p className="mt-5 font-[family-name:var(--font-eb-garamond)] text-lg italic leading-relaxed text-[#2a241c]">
+          <p className="mt-5 text-left font-[family-name:var(--font-eb-garamond)] text-lg leading-relaxed text-[#2a241c]">
             {puzzle.history}
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
@@ -587,7 +616,7 @@ export function Game() {
               <button
                 type="button"
                 onClick={goToNextPuzzle}
-                className="font-[family-name:var(--font-eb-garamond)] text-sm tracking-wide text-[#1a1510] underline decoration-[#1a1510]/35 underline-offset-4 transition hover:decoration-[#1a1510]/70"
+                className="font-[family-name:var(--font-eb-garamond)] text-base tracking-wide text-[#1a1510] underline decoration-[#1a1510]/35 underline-offset-4 transition hover:decoration-[#1a1510]/70"
               >
                 Next invention
               </button>
@@ -595,7 +624,7 @@ export function Game() {
               <button
                 type="button"
                 onClick={() => goToPuzzle(0)}
-                className="font-[family-name:var(--font-eb-garamond)] text-sm tracking-wide text-[#1a1510] underline decoration-[#1a1510]/35 underline-offset-4 transition hover:decoration-[#1a1510]/70"
+                className="font-[family-name:var(--font-eb-garamond)] text-base tracking-wide text-[#1a1510] underline decoration-[#1a1510]/35 underline-offset-4 transition hover:decoration-[#1a1510]/70"
               >
                 Start over
               </button>
@@ -603,7 +632,7 @@ export function Game() {
             <button
               type="button"
               onClick={dismissWinModal}
-              className="font-[family-name:var(--font-eb-garamond)] text-sm tracking-wide text-[#5c5348] underline decoration-[#5c5348]/35 underline-offset-4 transition hover:decoration-[#5c5348]/70"
+              className="font-[family-name:var(--font-eb-garamond)] text-base tracking-wide text-[#5c5348] underline decoration-[#5c5348]/35 underline-offset-4 transition hover:decoration-[#5c5348]/70"
             >
               Stay here
             </button>
